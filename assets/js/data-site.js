@@ -72,6 +72,14 @@ window.PATCHACHA_SITE = {
     'Teintures et encres naturelles', 'Broderie contemporaine et travail de la fibre'
   ],
 
-  // Images Grok reçues : vide pour la v1, les visuels provisoires sont dessinés en code.
-  grok: {}
+  // Pièces photographiées (images Grok) calées à l'échelle. Mesures en pixels de l'image d'origine.
+  // cmPx : pixels par centimètre sur le plan du mur ; solY : ligne mur / sol ; ancreX : axe de l'œuvre ;
+  // centreCm : hauteur du centre de l'œuvre au-dessus du sol ; basY : bas de l'œuvre (si pas de sol visible) ;
+  // fx, fy : point de cadrage quand l'image est recadrée.
+  pieces: {
+    bureau: { image: 'piece-bureau', cmPx: 4.24, solY: 840, ancreX: 790, centreCm: 150, basMinCm: 130, fx: .47, fy: .5,
+      reperes: 'bureau de 75 cm de haut' },
+    alcove: { image: 'piece-alcove', cmPx: 14, ancreX: 620, basY: 840, fx: .5, fy: .67,
+      reperes: 'niche d’environ 45 cm de large' }
+  }
 };

@@ -24,6 +24,7 @@
   P.series = D.series;
   P.photos = D.photos;
   P.textiles = D.textiles;
+  P.grok = D.grok || {};
   P.site = SITE;
   P.parSlug = Object.fromEntries(D.oeuvres.map((o) => [o.slug, o]));
   P.lienOeuvre = (o) => 'oeuvre.html#' + o.slug;
@@ -593,7 +594,7 @@
   };
 
   /* ---------- Voir au mur ---------- */
-  // Pièces dessinées en code (en cm) en attendant les photos Grok. H = hauteur visible de la scène.
+  // Pièces dessinées en code (en cm), utilisées tant qu'aucune photo calée n'existe pour la pièce. H = hauteur visible de la scène.
   const PIECES = {
     salon: { nom: 'Salon', H: 205, sol: 186, appui: 84, reperes: 'canapé de 200 cm', dessin: (L, sol) => {
       const x = L / 2 - 100;
@@ -628,7 +629,7 @@
       this.r = racine;
       this.liste = opts.oeuvres || P.oeuvres.filter((o) => o.dispo && (o.oeuvre));
       this.oeuvre = opts.oeuvre || this.liste[0];
-      this.piece = opts.piece || (P.dims(this.oeuvre)[0] <= 33 && Math.max(...P.dims(this.oeuvre)) <= 33 ? 'alcove' : 'salon');
+      this.piece = opts.piece || this.pieceParDefaut(this.oeuvre);
       this.heure = 30;
       this.decal = { x: 0, y: 0 };
       this.construire();
@@ -638,17 +639,17 @@
       this.r.innerHTML =
         '<div class="mur-module">' +
         '<div><div class="piece" data-piece><div class="piece__decor"></div><div class="piece__lumiere"></div><div class="piece__oeuvre" data-curseur="Déplacer" role="img"></div><div class="piece__mesure"></div>' +
-        '<div class="piece__legende"><span data-reperes></span><span>Pièce dessinée provisoirement</span></div></div></div>' +
+        '<div class="piece__legende"><span data-reperes></span><span data-provisoire></span></div></div></div>' +
         '<div class="mur-commandes">' +
         '<fieldset><legend>La pièce</legend><div class="choix" data-pieces>' + Object.entries(PIECES).map(([k, v]) => '<button type="button" data-p="' + k + '">' + v.nom + '</button>').join('') + '</div></fieldset>' +
         '<fieldset><legend>L’œuvre</legend><div class="vignettes" data-vignettes>' + this.liste.map((o) => '<button type="button" data-o="' + o.slug + '" title="' + P.esc(o.titre) + '"><img src="' + o.oeuvre.sm + '" alt="" loading="lazy"><span>' + P.esc(o.titre) + '</span></button>').join('') + '</div></fieldset>' +
         '<div><label class="titre-champ" for="' + id + '">La lumière dans la pièce</label><input id="' + id + '" type="range" min="0" max="100" value="' + this.heure + '" data-heure><div class="heure"><span>Matin</span><span>Midi</span><span>Soir</span></div></div>' +
         '<div class="cartel" data-cartel aria-live="polite"></div>' +
-        '<p class="discret">L’œuvre est dessinée à sa taille réelle par rapport au mobilier. Faites-la glisser sur le mur. La lumière change sur la pièce, jamais sur l’œuvre.</p>' +
+        '<p class="discret">L’œuvre est montrée à sa taille réelle par rapport au mobilier. Faites-la glisser sur le mur. La lumière change sur la pièce, jamais sur l’œuvre.</p>' +
         '</div></div>';
       this.el = {
         piece: P.$('[data-piece]', this.r), decor: P.$('.piece__decor', this.r), lum: P.$('.piece__lumiere', this.r),
-        oeuvre: P.$('.piece__oeuvre', this.r), mesure: P.$('.piece__mesure', this.r), reperes: P.$('[data-reperes]', this.r), cartel: P.$('[data-cartel]', this.r)
+        oeuvre: P.$('.piece__oeuvre', this.r), mesure: P.$('.piece__mesure', this.r), reperes: P.$('[data-reperes]', this.r), provisoire: P.$('[data-provisoire]', this.r), cartel: P.$('[data-cartel]', this.r)
       };
       P.$('[data-pieces]', this.r).addEventListener('click', (e) => { const b = e.target.closest('[data-p]'); if (b) { this.piece = b.dataset.p; this.decal = { x: 0, y: 0 }; this.rendu(true); } });
       P.$('[data-vignettes]', this.r).addEventListener('click', (e) => { const b = e.target.closest('[data-o]'); if (b) this.choisir(b.dataset.o); });
@@ -660,44 +661,78 @@
     choisir(slug) {
       const o = P.parSlug[slug]; if (!o) return;
       this.oeuvre = o; this.decal = { x: 0, y: 0 };
-      const [w, h] = P.dims(o);
-      if (Math.max(w, h) <= 33 && this.piece === 'salon') this.piece = 'alcove';
-      if (Math.max(w, h) > 45 && this.piece === 'alcove') this.piece = 'salon';
+      const m = Math.max(...P.dims(o));
+      if ((m <= 33 && this.piece === 'salon') || (m > 45 && this.piece === 'alcove')) this.piece = this.pieceParDefaut(o);
       this.rendu(true);
     }
-    rendu(anim) {
+    pieceParDefaut(o) {
+      if (Math.max(...P.dims(o)) <= 33) return 'alcove';
+      if (this.photo('salon')) return 'salon';
+      return this.photo('bureau') ? 'bureau' : 'salon';
+    }
+    // Pièce photographiée (image Grok calée à l'échelle) ou pièce dessinée en code
+    photo(cle) {
+      const cfg = P.site.pieces && P.site.pieces[cle];
+      const img = cfg && D.grok && D.grok[cfg.image];
+      return cfg && img ? { ...cfg, ...img } : null;
+    }
+    scene() {
+      const R = this.el.piece.getBoundingClientRect();
+      const o = this.oeuvre; const [w, h] = P.dims(o);
+      const ph = this.photo(this.piece);
+      if (ph) {
+        const s = Math.max(R.width / ph.w, R.height / ph.h);
+        const offX = (R.width - ph.w * s) * ph.fx, offY = (R.height - ph.h * s) * ph.fy;
+        const k = ph.cmPx * s;
+        const centre = ph.centreCm != null ? Math.max(ph.centreCm, (ph.basMinCm || 0) + h / 2) : null; // au-dessus de la lampe pour les grands formats
+        const cyN = centre != null ? ph.solY - centre * ph.cmPx : ph.basY - (h / 2) * ph.cmPx;
+        const bas = ph.solY != null ? offY + ph.solY * s : R.height;
+        return { R, ph, s, offX, offY, k, w, h, cx: offX + ph.ancreX * s, cy: offY + cyN * s, bas, reperes: ph.reperes };
+      }
       const pc = PIECES[this.piece];
+      const Hv = R.width < R.height ? pc.H * .8 : pc.H; // en portrait, on se rapproche du mur
+      const k = R.height / Hv;
+      const L = R.width / k;
+      const basO = pc.poser ? pc.sol - pc.appui : pc.sol - pc.appui - 22;
+      const y0 = Math.max(0, Math.min(pc.H - Hv, basO - h - 12));
+      return { R, pc, k, L, y0, Hv, w, h, cx: (L / 2) * k, cy: (basO - h / 2 - y0) * k, bas: (pc.sol - y0) * k, reperes: pc.reperes };
+    }
+    placer(sc, anim) {
+      const { k, w, h } = sc;
+      const W = w * k, H = h * k;
+      let left = sc.cx + this.decal.x * k - W / 2, top = sc.cy + this.decal.y * k - H / 2;
+      const nl = Math.max(4, Math.min(sc.R.width - W - 4, left)), nt = Math.max(4, Math.min(sc.bas - H - 4, top));
+      this.decal.x += (nl - left) / k; this.decal.y += (nt - top) / k;
+      left = nl; top = nt;
+      if (anim && window.gsap && !P.calme) window.gsap.fromTo(this.el.oeuvre, { left, top: top - 30, opacity: 0 }, { left, top, opacity: 1, duration: .8, ease: 'power3.out' });
+      else Object.assign(this.el.oeuvre.style, { left: left + 'px', top: top + 'px', opacity: 1 });
+      Object.assign(this.el.mesure.style, { left: left + 'px', width: W + 'px', top: (top + H + 8) + 'px' });
+    }
+    rendu(anim) {
       const R = this.el.piece.getBoundingClientRect();
       if (!R.width) return;
-      const Hv = R.width < R.height ? pc.H * .8 : pc.H; // en portrait, on se rapproche du mur
-      const k = R.height / Hv; // px par cm
-      const L = R.width / k;      // largeur visible en cm
-      this.k = k; this.L = L;
-      const hO = P.dims(this.oeuvre)[1];
-      const basO = pc.poser ? pc.sol - pc.appui : pc.sol - pc.appui - 22;
-      const y0 = Math.max(0, Math.min(pc.H - Hv, basO - hO - 12));
-      this.y0 = y0;
-      this.el.decor.innerHTML = '<svg viewBox="0 ' + y0.toFixed(1) + ' ' + L.toFixed(1) + ' ' + Hv.toFixed(1) + '" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
-        '<defs><linearGradient id="mur-' + this.piece + '" x1="0" x2="1"><stop offset="0" stop-color="var(--mur-a, #EEE7DB)"/><stop offset="1" stop-color="var(--mur-b, #E4DACA)"/></linearGradient></defs>' +
-        '<rect width="' + L.toFixed(1) + '" height="' + pc.sol + '" fill="url(#mur-' + this.piece + ')"/>' +
-        '<rect y="' + pc.sol + '" width="' + L.toFixed(1) + '" height="' + (pc.H - pc.sol) + '" fill="#CDBEA6"/>' +
-        '<rect y="' + (pc.sol - 8) + '" width="' + L.toFixed(1) + '" height="8" fill="#E8DFD1"/>' +
-        pc.dessin(L, pc.sol) + '</svg>';
-      const o = this.oeuvre; const [w, h] = P.dims(o);
-      this.el.oeuvre.innerHTML = P.cadreHTML(o, k, { grand: true, eager: true });
-      this.el.oeuvre.setAttribute('aria-label', o.titre + ' à l’échelle, ' + P.formatCourt(o));
-      // position par défaut : centrée, au-dessus du meuble ou posée sur la tablette
-      const cx = L / 2 + this.decal.x;
-      const bas = pc.poser ? pc.sol - pc.appui : pc.sol - pc.appui - 22;
-      const cy = bas - h / 2 + this.decal.y;
-      this.pos = { cx, cy, w, h };
-      const left = (cx - w / 2) * k, top = (cy - h / 2 - y0) * k;
-      if (anim && window.gsap && !P.calme) {
-        window.gsap.fromTo(this.el.oeuvre, { left, top: top - 30, opacity: 0 }, { left, top, opacity: 1, duration: .8, ease: 'power3.out' });
-      } else { Object.assign(this.el.oeuvre.style, { left: left + 'px', top: top + 'px', opacity: 1 }); }
-      Object.assign(this.el.mesure.style, { left: left + 'px', width: w * k + 'px', top: (top + h * k + 8) + 'px' });
-      this.el.mesure.textContent = w + ' cm';
-      this.el.reperes.textContent = 'Échelle réelle : ' + pc.reperes;
+      const sc = this.sc = this.scene();
+      const nom = PIECES[this.piece].nom;
+      if (sc.ph) {
+        const ph = sc.ph;
+        this.el.decor.innerHTML = '<img src="' + (R.width > 1000 || R.height > 700 ? ph.src : ph.sm) + '" srcset="' + ph.sm + ' ' + (ph.w > ph.h ? 900 : 600) + 'w, ' + ph.src + ' ' + ph.w + 'w" sizes="(min-width: 1080px) 70vw, 100vw" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:' + (ph.fx * 100) + '% ' + (ph.fy * 100) + '%">';
+        this.el.provisoire.textContent = 'Image d’ambiance';
+      } else {
+        const { pc, L, y0, Hv } = sc;
+        this.el.decor.innerHTML = '<svg viewBox="0 ' + y0.toFixed(1) + ' ' + L.toFixed(1) + ' ' + Hv.toFixed(1) + '" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+          '<defs><linearGradient id="mur-' + this.piece + '" x1="0" x2="1"><stop offset="0" stop-color="var(--mur-a, #EEE7DB)"/><stop offset="1" stop-color="var(--mur-b, #E4DACA)"/></linearGradient></defs>' +
+          '<rect width="' + L.toFixed(1) + '" height="' + pc.sol + '" fill="url(#mur-' + this.piece + ')"/>' +
+          '<rect y="' + pc.sol + '" width="' + L.toFixed(1) + '" height="' + (pc.H - pc.sol) + '" fill="#CDBEA6"/>' +
+          '<rect y="' + (pc.sol - 8) + '" width="' + L.toFixed(1) + '" height="8" fill="#E8DFD1"/>' +
+          pc.dessin(L, pc.sol) + '</svg>';
+        this.el.provisoire.textContent = 'Pièce dessinée provisoirement';
+      }
+      const o = this.oeuvre;
+      this.el.oeuvre.innerHTML = P.cadreHTML(o, sc.k, { grand: true, eager: true });
+      this.el.oeuvre.setAttribute('aria-label', o.titre + ' à l’échelle dans : ' + nom + ', ' + P.formatCourt(o));
+      this.placer(sc, anim);
+      this.el.mesure.textContent = sc.w + ' cm';
+      this.el.reperes.textContent = 'Échelle réelle : ' + sc.reperes;
       P.$$('[data-p]', this.r).forEach((b) => b.setAttribute('aria-pressed', b.dataset.p === this.piece ? 'true' : 'false'));
       P.$$('[data-o]', this.r).forEach((b) => b.setAttribute('aria-pressed', b.dataset.o === o.slug ? 'true' : 'false'));
       this.el.cartel.innerHTML = '<strong><a class="lien" href="' + P.lienOeuvre(o) + '">' + P.esc(o.titre) + '</a></strong><span>' + P.esc(P.formatTexte(o)) + '</span><span class="prix">' + (o.dispo ? P.euro(o.prix) : 'Vendue') + '</span>';
@@ -706,9 +741,10 @@
     lumiere() {
       const t = this.heure / 100; // 0 matin, .5 midi, 1 soir
       const froid = Math.max(0, 1 - t * 2), chaud = Math.max(0, t * 2 - 1);
-      const a = 'rgba(' + Math.round(225 + 30 * chaud) + ',' + Math.round(232 - 30 * chaud) + ',' + Math.round(245 - 80 * chaud) + ',' + (.16 + .14 * froid + .26 * chaud).toFixed(2) + ')';
+      const f = this.sc && this.sc.ph ? .6 : 1; // une photo a déjà sa propre lumière
+      const a = 'rgba(' + Math.round(225 + 30 * chaud) + ',' + Math.round(232 - 30 * chaud) + ',' + Math.round(245 - 80 * chaud) + ',' + ((.16 + .14 * froid + .26 * chaud) * f).toFixed(2) + ')';
       const angle = 100 - 200 * t;
-      this.el.lum.style.background = 'linear-gradient(' + angle + 'deg, rgba(255,255,255,0) 0%, ' + a + ' 75%, rgba(60,40,20,' + (.12 + .28 * chaud).toFixed(2) + ') 100%)';
+      this.el.lum.style.background = 'linear-gradient(' + angle + 'deg, rgba(255,255,255,0) 0%, ' + a + ' 75%, rgba(60,40,20,' + ((.12 + .28 * chaud) * f).toFixed(2) + ') 100%)';
       const ox = (1 - 2 * t) * 16;
       const c = P.$('.cadre, .toile', this.el.oeuvre);
       if (c) { c.style.setProperty('--ombre-x', ox.toFixed(1)); c.style.setProperty('--ombre-y', (8 + 6 * Math.abs(1 - 2 * t)).toFixed(1)); c.style.setProperty('--ombre-flou', (18 + 10 * chaud).toFixed(0)); c.style.setProperty('--ombre-a', (.22 + .12 * chaud).toFixed(2)); }
@@ -720,25 +756,17 @@
       let depart = null;
       el.addEventListener('pointerdown', (e) => { e.preventDefault(); depart = { x: e.clientX, y: e.clientY, dx: this.decal.x, dy: this.decal.y }; el.setPointerCapture(e.pointerId); });
       el.addEventListener('pointermove', (e) => {
-        if (!depart) return;
-        const pc = PIECES[this.piece];
-        let dx = depart.dx + (e.clientX - depart.x) / this.k, dy = depart.dy + (e.clientY - depart.y) / this.k;
-        const { w, h } = this.pos;
-        const cx0 = this.L / 2, bas = pc.poser ? pc.sol - pc.appui : pc.sol - pc.appui - 22, cy0 = bas - h / 2;
-        dx = Math.max(w / 2 - cx0 + 4, Math.min(this.L - w / 2 - cx0 - 4, dx));
-        dy = Math.max(this.y0 + h / 2 - cy0 + 4, Math.min(pc.sol - h / 2 - cy0 - 4, dy));
-        this.decal = { x: dx, y: dy };
-        const left = (cx0 + dx - w / 2) * this.k, top = (cy0 + dy - h / 2 - this.y0) * this.k;
-        el.style.left = left + 'px'; el.style.top = top + 'px';
-        Object.assign(this.el.mesure.style, { left: left + 'px', top: (top + h * this.k + 8) + 'px' });
+        if (!depart || !this.sc) return;
+        this.decal = { x: depart.dx + (e.clientX - depart.x) / this.sc.k, y: depart.dy + (e.clientY - depart.y) / this.sc.k };
+        this.placer(this.sc, false);
       });
       const fin = () => { depart = null; };
       el.addEventListener('pointerup', fin); el.addEventListener('pointercancel', fin);
       el.tabIndex = 0;
       el.addEventListener('keydown', (e) => {
         const pas = { ArrowLeft: [-5, 0], ArrowRight: [5, 0], ArrowUp: [0, -5], ArrowDown: [0, 5] }[e.key];
-        if (!pas) return; e.preventDefault();
-        this.decal.x += pas[0]; this.decal.y += pas[1]; this.rendu(false);
+        if (!pas || !this.sc) return; e.preventDefault();
+        this.decal.x += pas[0]; this.decal.y += pas[1]; this.placer(this.sc, false);
       });
     }
   };

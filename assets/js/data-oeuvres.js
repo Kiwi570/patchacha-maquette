@@ -2705,5 +2705,31 @@ window.PATCHACHA_DATA = {
    "h": 600,
    "alt": "Photo de branches dans une forêt d’automne aux tons roux"
   }
+ },
+ "grok": {
+  "accueil-lenteur-table-atelier": {
+   "src": "assets/img/grok/accueil-lenteur-table-atelier.webp",
+   "sm": "assets/img/grok/accueil-lenteur-table-atelier-600.webp",
+   "w": 1122,
+   "h": 1402
+  },
+  "accueil-newsletter-feuilles-lin": {
+   "src": "assets/img/grok/accueil-newsletter-feuilles-lin.webp",
+   "sm": "assets/img/grok/accueil-newsletter-feuilles-lin-900.webp",
+   "w": 1672,
+   "h": 941
+  },
+  "piece-alcove": {
+   "src": "assets/img/grok/piece-alcove.webp",
+   "sm": "assets/img/grok/piece-alcove-600.webp",
+   "w": 1122,
+   "h": 1402
+  },
+  "piece-bureau": {
+   "src": "assets/img/grok/piece-bureau.webp",
+   "sm": "assets/img/grok/piece-bureau-900.webp",
+   "w": 1672,
+   "h": 941
+  }
  }
 };

@@ -82,7 +82,9 @@
     const pile = $('[data-pile]');
     const finie = P.parSlug['les-doigts-geles'];
     const images = [
-      { ...P.photos['main-dessin'], legende: 'L’arbre commence à l’encre, à main levée.' },
+      P.grok['accueil-lenteur-table-atelier']
+        ? { ...P.grok['accueil-lenteur-table-atelier'], alt: 'Papiers faits main, encres et pinceau posés sur une table en bois, image d’ambiance', legende: 'Papiers, encres, pinceau : la matière avant le geste.' }
+        : { ...P.photos['main-dessin'], legende: 'L’arbre commence à l’encre, à main levée.' },
       { ...P.photos['detail-echinacees'], legende: 'Détail : papiers superposés, lavis, transparences.' },
       { src: finie.vues[0].src, w: finie.vues[0].w, h: finie.vues[0].h, alt: finie.vues[0].alt, legende: 'Les doigts gelés, encadré, ' + finie.dimTexte.cadre + '.' }
     ];
@@ -271,6 +273,14 @@
     }));
   }
 
+  /* ---------- Lettre d'information : les feuilles se posent sur le lin ---------- */
+  function lettre() {
+    const fond = $('.newsletter__fond');
+    if (!fond) { P.derive($('.newsletter')); return; }
+    if (!g || P.calme) return;
+    g.fromTo(fond, { scale: 1.16, rotation: -1.2 }, { scale: 1, rotation: 0, ease: 'none', scrollTrigger: { trigger: '.newsletter', start: 'top bottom', end: 'center center', scrub: .8 } });
+  }
+
   P.pret(async () => {
     heros();
     lenteur();
@@ -281,7 +291,7 @@
     textiles();
     rendezvous();
     univers();
-    P.derive($('.newsletter'));
+    lettre();
     P.traces();
     await ouverture();
     herosEntree();
