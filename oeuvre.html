@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Œuvre de Patchacha</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Fiche d’une œuvre originale de Patchacha : vues détaillées, loupe, formats, prix et essai à l’échelle réelle sur un mur.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="preload" href="assets/fonts/gloock.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="page-oeuvre">
+<script>try{var c=localStorage.getItem('patchacha:calme');if(document.body.classList.contains('page-index')&&!(c==='true'||(c===null&&matchMedia('(prefers-reduced-motion: reduce)').matches))){var d=document.createElement('div');d.className='ouverture-pre';d.setAttribute('aria-hidden','true');document.body.appendChild(d);}}catch(e){}</script>
+<a class="sr" href="#contenu">Aller au contenu</a>
+<header class="site-header">
+  <div class="site-header__barre">
+    <a class="logo" href="index.html" aria-label="Patchacha, accueil">
+      <img src="assets/img/site/logo-patchacha.png" alt="" width="58" height="58">
+      <span>Patchacha<small>Artiste plasticienne, Quimper</small></span>
+    </a>
+    <nav class="nav" aria-label="Navigation principale">
+      <a href="tableaux.html" aria-current="page">Tableaux</a>
+      <a href="tableaux.html#totems" data-page>Totems</a>
+      <a href="index.html#univers" data-page>Foulards</a>
+      <a href="index.html#rendez-vous" data-page>Expositions</a>
+      <a href="index.html#artiste" data-page>L’artiste</a>
+      <a href="index.html#contact" data-page>Contact</a>
+    </nav>
+    <div class="outils">
+      <button class="bouton-outil" type="button" data-calme aria-pressed="false" title="Réduire les animations">
+        <svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><path d="M1 6c2.5-4 5-4 7.5 0s5 4 7.5 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span class="mode-calme-libelle">Mode calme</span><span class="sr">Mode calme, réduire les animations</span>
+      </button>
+      <button class="bouton-outil bouton-panier" type="button" aria-label="Ouvrir le panier">Panier <span class="panier-compte" data-vide="true">0</span></button>
+      <button class="bouton-outil burger" type="button" data-menu aria-expanded="false" aria-controls="menu-mobile">Menu</button>
+    </div>
+  </div>
+</header>
+<div class="menu-mobile" id="menu-mobile">
+  <button class="fermer" type="button" data-menu aria-label="Fermer le menu">×</button>
+  <a href="index.html">Accueil</a>
+  <a href="tableaux.html">Tableaux</a>
+  <a href="tableaux.html#totems" data-page>Totems végétaux</a>
+  <a href="index.html#univers" data-page>Foulards et accessoires</a>
+  <a href="index.html#rendez-vous" data-page>Expositions</a>
+  <a href="index.html#artiste" data-page>L’artiste</a>
+  <a href="index.html#contact" data-page>Contact</a>
+</div>
+<div class="odet" aria-hidden="true">
+  <svg viewBox="0 0 26 1000" preserveAspectRatio="none"><path class="lit" d="M13,0 C24,60 2,120 13,180 S24,300 13,360 S2,480 13,540 S24,660 13,720 S2,840 13,900 S20,970 13,1000"/><path class="eau" d="M13,0 C24,60 2,120 13,180 S24,300 13,360 S2,480 13,540 S24,660 13,720 S2,840 13,900 S20,970 13,1000"/></svg>
+  <span>Le fil de l’Odet</span>
+</div>
+<main id="contenu" class="fiche" data-fiche>
+  <div class="enveloppe">
+    <nav class="fil-ariane" aria-label="Fil d’Ariane">
+      <a href="index.html">Accueil</a><span aria-hidden="true">/</span>
+      <a href="tableaux.html">Tableaux</a><span aria-hidden="true">/</span>
+      <a href="tableaux.html#arbres" data-page data-ariane-serie>Série</a><span aria-hidden="true">/</span>
+      <span aria-current="page" data-ariane-titre></span>
+    </nav>
+
+    <div class="fiche__grille">
+      <div class="visionneuse" data-source-envol>
+        <div class="visionneuse__cadre" data-vue>
+          <img data-vue-img alt="" width="1200" height="1200">
+          <div class="loupe" aria-hidden="true"></div>
+        </div>
+        <div class="visionneuse__legende"><span data-vue-legende></span><span data-vue-compte></span></div>
+        <div class="miniatures" data-miniatures role="group" aria-label="Choisir une vue"></div>
+      </div>
+
+      <div class="fiche__infos">
+        <div>
+          <p class="surtitre"><a class="lien" data-serie-lien href="tableaux.html"></a></p>
+          <h1 data-titre></h1>
+        </div>
+        <div class="fiche__prix" data-prix></div>
+        <div class="boutons" data-actions></div>
+        <dl class="caracteristiques" data-caracteristiques></dl>
+        <p class="discret" data-livraison></p>
+      </div>
+    </div>
+
+    <section class="section histoire" aria-labelledby="titre-histoire">
+      <div>
+        <h2 id="titre-histoire" class="h-moyen">L’histoire de l’œuvre</h2>
+        <p class="discret" data-nom-site></p>
+      </div>
+      <div class="texte-long" data-description></div>
+    </section>
+
+    <section class="section section--serree" id="voir-au-mur" aria-labelledby="titre-mur">
+      <div class="titre-section">
+        <h2 id="titre-mur" data-encre>Voir l’œuvre chez soi</h2>
+        <p>À taille réelle, par rapport à un canapé, un bureau ou une alcôve. Déplacez-la, changez l’heure : la lumière tourne dans la pièce, jamais sur l’œuvre.</p>
+      </div>
+      <div data-voir-au-mur></div>
+    </section>
+
+    <section class="section section--serree" aria-labelledby="titre-esprit">
+      <div class="titre-section"><h2 id="titre-esprit" class="h-moyen">Dans le même esprit</h2></div>
+      <div class="rangee" data-rangee></div>
+    </section>
+
+    <nav class="suivantes section--serree" aria-label="Autres œuvres" data-suivantes></nav>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="enveloppe">
+    <div class="pied__grand" aria-hidden="true">Patchacha</div>
+    <div class="pied__grille">
+      <div>
+        <h3>L’atelier</h3>
+        <ul>
+          <li>Atelier à Quimper, visites sur rendez-vous</li>
+          <li><span>contact@atelierpatchacha.fr</span></li>
+          <li>Réponse dans la journée</li>
+          <li>Téléphone : <span class="a-completer">à compléter</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Les œuvres</h3>
+        <ul>
+          <li><a class="lien" href="tableaux.html">Tableaux</a></li>
+          <li><a class="lien" href="tableaux.html#totems" data-page>Totems végétaux</a></li>
+          <li><a class="lien" href="index.html#univers" data-page>Foulards et accessoires</a></li>
+          <li><a class="lien" href="https://www.etsy.com/fr/shop/PatchachaCreations" target="_blank" rel="noopener">Guides ecoprint et tataki zomé, sur Etsy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Suivre l’atelier</h3>
+        <ul>
+          <li><a class="lien" href="https://www.instagram.com/atelierpatchacha" target="_blank" rel="noopener">Instagram @atelierpatchacha</a></li>
+          <li><a class="lien" href="https://www.facebook.com/61579602512744" target="_blank" rel="noopener">Facebook</a></li>
+          <li><a class="lien" href="index.html#lettre" data-page>Lettre d’information</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Acheter une œuvre</h3>
+        <ul>
+          <li>Pièces uniques signées, certificat d’authenticité et facture</li>
+          <li>Paiement par carte bancaire (Stripe)</li>
+          <li>Expédition sous 3 jours ouvrés, colis suivi</li>
+          <li>TVA non applicable, article 293 B du CGI</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pied__mentions">
+      <span>© 2026 Patchacha, Sylviane Caradec</span>
+      <a class="lien" href="https://www.atelierpatchacha.fr/mentions-legales" target="_blank" rel="noopener">Mentions légales</a>
+      <a class="lien" href="https://www.atelierpatchacha.fr/conditions-generales-de-vente" target="_blank" rel="noopener">CGV</a>
+      <a class="lien" href="https://www.atelierpatchacha.fr/politique-de-confidentialite" target="_blank" rel="noopener">Confidentialité</a>
+      <a class="lien" href="https://www.atelierpatchacha.fr/retracta" target="_blank" rel="noopener">Droit de rétractation</a>
+      <span>Maquette de démonstration : panier, paiement et formulaires simulés.</span>
+    </div>
+  </div>
+</footer>
+<div class="tiroir" id="tiroir" aria-hidden="true">
+  <div class="tiroir__fond" data-fermer-tiroir></div>
+  <aside class="tiroir__panneau" role="dialog" aria-modal="true" aria-labelledby="tiroir-titre">
+    <div class="tiroir__tete"><h2 id="tiroir-titre">Votre panier</h2><button class="fermer" type="button" data-fermer-tiroir aria-label="Fermer le panier">×</button></div>
+    <div class="tiroir__liste" id="tiroir-liste"></div>
+    <div class="tiroir__pied">
+      <div class="total"><span>Total des œuvres</span><span id="tiroir-total">0 €</span></div>
+      <small>Frais de livraison calculés à la commande. Retrait possible à l’atelier, à Quimper. TVA non applicable, article 293 B du CGI.</small>
+      <div class="paiements" aria-label="Moyens de paiement du site actuel"><span>Carte bancaire</span><span>Stripe</span></div>
+      <button class="btn" type="button" id="tiroir-commander" disabled>Commander</button>
+    </div>
+  </aside>
+</div>
+<script src="assets/js/vendor/gsap.min.js"></script>
+<script src="assets/js/vendor/ScrollTrigger.min.js"></script>
+<script src="assets/js/vendor/SplitText.min.js"></script>
+<script src="assets/js/vendor/Flip.min.js"></script>
+<script src="assets/js/vendor/CustomEase.min.js"></script>
+<script src="assets/js/vendor/lenis.min.js"></script>
+<script src="assets/js/vendor/ogl.min.js"></script>
+<script src="assets/js/data-oeuvres.js"></script>
+<script src="assets/js/data-site.js"></script>
+<script src="assets/js/core.js"></script>
+<script src="assets/js/oeuvre.js"></script>
+</body>
+</html>
