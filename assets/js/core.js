@@ -241,26 +241,31 @@
     notifT = setTimeout(() => n.classList.remove('est-visible'), 3200);
   };
 
+  /* Ancre de l'adresse, lue sans planter sur un encodage invalide (#%E9, lien tronqué) */
+  P.ancre = () => { try { return decodeURIComponent(location.hash.slice(1)); } catch (e) { return ''; } };
+
   /* ---------- Modale ---------- */
   P.modale = {
     ouvrir(contenu, retour) {
       let m = P.$('#modale');
       if (!m) {
         m = document.createElement('div'); m.id = 'modale'; m.className = 'modale';
-        m.innerHTML = '<div class="modale__fond" data-fermer></div><div class="modale__boite" role="dialog" aria-modal="true" aria-labelledby="modale-titre"><button class="fermer" type="button" data-fermer aria-label="Fermer">×</button><div class="modale__contenu"></div></div>';
+        m.innerHTML = '<div class="modale__fond" data-fermer></div><div class="modale__boite" data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="modale-titre"><button class="fermer" type="button" data-fermer aria-label="Fermer">×</button><div class="modale__contenu"></div></div>';
         document.body.appendChild(m);
         m.addEventListener('click', (e) => { if (e.target.closest('[data-fermer]')) P.modale.fermer(); });
       }
       P.$('.modale__contenu', m).innerHTML = contenu;
       this.retour = retour || document.activeElement;
       m.classList.add('est-ouvert');
+      document.documentElement.classList.add('verrou');
       P.lenis && P.lenis.stop();
       setTimeout(() => { const f = P.$('input, select, textarea, button:not(.fermer)', m) || P.$('.fermer', m); f && f.focus(); }, 60);
       return m;
     },
     fermer() {
-      const m = P.$('#modale'); if (!m) return;
+      const m = P.$('#modale'); if (!m || !m.classList.contains('est-ouvert')) return;
       m.classList.remove('est-ouvert');
+      document.documentElement.classList.remove('verrou');
       P.lenis && P.lenis.start();
       this.retour && this.retour.focus && this.retour.focus();
     }
@@ -274,16 +279,17 @@
     ajouter(slug, source) {
       const o = P.parSlug[slug];
       if (!o || !o.dispo) return;
-      if (this.contient(slug)) { P.notif('Déjà dans votre panier : ' + o.titre + ' est une pièce unique.'); this.ouvrir(); return; }
+      if (this.contient(slug)) { P.notif('Déjà dans votre panier : ' + o.titre + ' est une pièce unique.'); this.ouvrir(); return; }
       this.articles.push(slug);
       this.sauver();
       P.envol(source, o);
-      P.notif('Ajoutée au panier : ' + o.titre);
+      P.notif('Ajoutée au panier : ' + o.titre);
     },
     retirer(slug) { this.articles = this.articles.filter((s) => s !== slug); this.sauver(); },
     total() { return this.articles.reduce((t, s) => t + (P.parSlug[s].prix || 0), 0); },
     maj() {
       P.$$('.panier-compte').forEach((c) => { c.textContent = this.articles.length; c.dataset.vide = this.articles.length ? 'false' : 'true'; });
+      P.$$('[data-panier-sr]').forEach((s) => { const n = this.articles.length; s.textContent = n ? ' (' + n + (n > 1 ? ' œuvres)' : ' œuvre)') : ''; });
       const liste = P.$('#tiroir-liste'); if (!liste) return;
       if (!this.articles.length) {
         liste.innerHTML = '<div class="vide"><p>Votre panier est vide.</p><p class="discret">Chaque œuvre est une pièce unique, signée, livrée avec son certificat d’authenticité.</p><a class="btn btn--ligne" href="tableaux.html">Voir les tableaux</a></div>';
@@ -296,15 +302,15 @@
       P.$('#tiroir-total').textContent = P.euro(this.total());
       P.$('#tiroir-commander').disabled = !this.articles.length;
     },
-    ouvrir() { const t = P.$('#tiroir'); if (!t) return; t.classList.add('est-ouvert'); t.setAttribute('aria-hidden', 'false'); P.lenis && P.lenis.stop(); setTimeout(() => P.$('#tiroir .fermer').focus(), 50); },
-    fermer() { const t = P.$('#tiroir'); if (!t) return; t.classList.remove('est-ouvert'); t.setAttribute('aria-hidden', 'true'); P.lenis && P.lenis.start(); },
+    ouvrir() { const t = P.$('#tiroir'); if (!t) return; t.classList.add('est-ouvert'); t.setAttribute('aria-hidden', 'false'); t.setAttribute('data-lenis-prevent', ''); document.documentElement.classList.add('verrou'); P.lenis && P.lenis.stop(); setTimeout(() => P.$('#tiroir .fermer').focus(), 50); },
+    fermer() { const t = P.$('#tiroir'); if (!t || !t.classList.contains('est-ouvert')) return; t.classList.remove('est-ouvert'); t.setAttribute('aria-hidden', 'true'); document.documentElement.classList.remove('verrou'); P.lenis && P.lenis.start(); },
     commander() {
       if (!this.articles.length) return;
       this.fermer();
       const lignes = this.articles.map((s) => '<li>' + P.esc(P.parSlug[s].titre) + ', ' + P.euro(P.parSlug[s].prix) + '</li>').join('');
       P.modale.ouvrir(
         '<h2 id="modale-titre">Finaliser la commande</h2>' +
-        '<p class="discret">Démonstration : aucune commande n’est envoyée et aucun paiement n’est effectué.</p>' +
+        '<p class="discret">Démonstration : aucune commande n’est envoyée et aucun paiement n’est effectué.</p>' +
         '<ul>' + lignes + '</ul>' +
         '<form class="formulaire" id="form-commande" novalidate>' +
         '<div class="ligne-champs"><div class="champ"><label for="cmd-nom">Nom et prénom</label><input id="cmd-nom" name="nom" autocomplete="name" required></div>' +
@@ -376,14 +382,16 @@
     surDefil(window.scrollY);
     P.$$('[data-calme]').forEach((b) => { b.setAttribute('aria-pressed', P.calme ? 'true' : 'false'); b.addEventListener('click', P.basculerCalme); });
     const menu = P.$('.menu-mobile');
+    if (menu) menu.setAttribute('data-lenis-prevent', '');
     P.$$('[data-menu]').forEach((b) => b.addEventListener('click', () => {
       const ouvert = !menu.classList.contains('est-ouvert');
       menu.classList.toggle('est-ouvert', ouvert);
+      document.documentElement.classList.toggle('menu-ouvert', ouvert);
       P.$$('[data-menu]').forEach((x) => x.setAttribute('aria-expanded', ouvert ? 'true' : 'false'));
       ouvert ? (P.lenis && P.lenis.stop()) : (P.lenis && P.lenis.start());
       if (ouvert) setTimeout(() => P.$('a', menu).focus(), 80);
     }));
-    menu && P.$$('a', menu).forEach((a) => a.addEventListener('click', () => { menu.classList.remove('est-ouvert'); P.lenis && P.lenis.start(); }));
+    menu && P.$$('a', menu).forEach((a) => a.addEventListener('click', () => { menu.classList.remove('est-ouvert'); document.documentElement.classList.remove('menu-ouvert'); P.lenis && P.lenis.start(); }));
     P.$$('.bouton-panier').forEach((b) => b.addEventListener('click', () => P.panier.ouvrir()));
     const t = P.$('#tiroir');
     if (t) {
@@ -394,9 +402,24 @@
       P.$('#tiroir-commander').addEventListener('click', () => P.panier.commander());
     }
     document.addEventListener('keydown', (e) => {
+      // piège du focus dans la couche ouverte (menu, modale, tiroir)
+      if (e.key === 'Tab') {
+        const couche = [P.$('#modale.est-ouvert .modale__boite'), P.$('#tiroir.est-ouvert'), menu && menu.classList.contains('est-ouvert') ? menu : null].find(Boolean);
+        if (!couche) return;
+        const f = P.$$('a[href], button:not([disabled]), input:not([type=hidden]), select, textarea', couche).filter((x) => x.offsetParent !== null);
+        if (couche === menu) { const bm = P.$$('[data-menu]').find((x) => x.offsetParent !== null); if (bm) f.unshift(bm); }
+        const i = f.indexOf(document.activeElement);
+        if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+        else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+        return;
+      }
       if (e.key !== 'Escape') return;
       P.panier.fermer(); P.modale.fermer();
-      if (menu && menu.classList.contains('est-ouvert')) { menu.classList.remove('est-ouvert'); P.lenis && P.lenis.start(); }
+      if (menu && menu.classList.contains('est-ouvert')) {
+        menu.classList.remove('est-ouvert'); document.documentElement.classList.remove('menu-ouvert'); P.lenis && P.lenis.start();
+        P.$$('[data-menu]').forEach((x) => x.setAttribute('aria-expanded', 'false'));
+        const bm = P.$$('[data-menu]').find((x) => x.offsetParent !== null); bm && bm.focus();
+      }
     });
     // Délégation : boutons « Adopter »
     document.addEventListener('click', (e) => {
@@ -517,7 +540,7 @@
     P.$$('[data-encre]', racine).forEach((el) => {
       if (el.dataset.encreFait) return; el.dataset.encreFait = '1';
       const long = el.textContent.length > 60;
-      const sp = new window.SplitText(el, { type: long ? 'words' : 'words,chars', charsClass: 'lettre', wordsClass: 'mot' });
+      const sp = new window.SplitText(el, { type: long ? 'words' : 'words,chars', charsClass: 'lettre', wordsClass: 'mot', aria: 'none' }); // texte lu tel quel
       const morceaux = long ? sp.words : sp.chars;
       const r = el.getBoundingClientRect();
       const visible = r.top < innerHeight * .92;
@@ -569,8 +592,9 @@
       if (url.origin !== location.origin) return;
       const norm = (p) => p.replace(/\.html$/, '').replace(/\/index$/, '/');
       const memePage = norm(url.pathname) === norm(location.pathname);
+      if (memePage && !url.hash && url.search === location.search) { e.preventDefault(); P.allerA(document.body); return; }
       if (memePage && url.hash) {
-        const cible = document.getElementById(decodeURIComponent(url.hash.slice(1)));
+        let cible = null; try { cible = document.getElementById(decodeURIComponent(url.hash.slice(1))); } catch (er) { /* ancre invalide */ }
         if (cible) { e.preventDefault(); P.allerA(cible); return; }
         if (url.pathname !== location.pathname) { e.preventDefault(); location.hash = url.hash; }
         return;
@@ -581,7 +605,7 @@
       P.session.set('transition', '1');
       g.fromTo(voile, { yPercent: 100 }, { yPercent: 0, duration: .55, ease: 'power3.in', onComplete: () => { location.href = a.href; } });
     });
-    window.addEventListener('pageshow', (e) => { if (e.persisted && g) g.set(voile, { yPercent: 100 }); });
+    window.addEventListener('pageshow', (e) => { if (e.persisted && g) g.set(voile, { yPercent: 100 }); if (e.persisted) { P.panier.fermer(); P.modale.fermer(); } });
   }
 
   /* ---------- Formulaires simulés ---------- */
@@ -592,7 +616,7 @@
       const zone = P.$('[data-message]', form);
       const requis = P.$$('[required]', form);
       const manque = requis.find((c) => !c.value.trim() || (c.type === 'email' && !/^\S+@\S+\.\S+$/.test(c.value)));
-      if (manque) { zone.innerHTML = '<p class="message-form">Complétez le champ « ' + P.esc(P.$('label[for="' + manque.id + '"]', form).textContent) + ' » pour continuer.</p>'; manque.focus(); return; }
+      if (manque) { zone.innerHTML = '<p class="message-form">Complétez le champ « ' + P.esc(P.$('label[for="' + manque.id + '"]', form).textContent) + ' » pour continuer.</p>'; manque.focus(); return; }
       const prenom = form.prenom ? form.prenom.value.trim() : '';
       zone.innerHTML = '<p class="message-form">' + message(prenom) + '</p>';
       const b = P.$('button[type="submit"]', form); b && P.frapper(b);
@@ -601,12 +625,12 @@
   };
   P.questionOeuvre = (o) => {
     P.modale.ouvrir(
-      '<h2 id="modale-titre">Une question sur ' + P.esc(o ? o.titre : 'une œuvre') + ' ?</h2>' +
-      '<p class="discret">Patchacha répond dans la journée. Formulaire de démonstration : rien n’est envoyé.</p>' +
+      '<h2 id="modale-titre">Une question sur ' + P.esc(o ? o.titre : 'une œuvre') + ' ?</h2>' +
+      '<p class="discret">Patchacha répond dans la journée. Formulaire de démonstration : rien n’est envoyé.</p>' +
       '<form class="formulaire" id="form-question" novalidate>' +
       '<div class="ligne-champs"><div class="champ"><label for="q-prenom">Prénom</label><input id="q-prenom" name="prenom" autocomplete="given-name" required></div>' +
       '<div class="champ"><label for="q-mail">E-mail</label><input id="q-mail" name="mail" type="email" autocomplete="email" required></div></div>' +
-      '<div class="champ"><label for="q-message">Votre question</label><textarea id="q-message" name="message" required>' + (o ? 'Bonjour, je m’intéresse à « ' + P.esc(o.titre) + ' ». ' : '') + '</textarea></div>' +
+      '<div class="champ"><label for="q-message">Votre question</label><textarea id="q-message" name="message" required>' + (o ? 'Bonjour, je m’intéresse à « ' + P.esc(o.titre) + ' ». ' : '') + '</textarea></div>' +
       '<button class="btn" type="submit">Envoyer ma question</button><div data-message role="status"></div></form>'
     );
     P.formulaireSimule(P.$('#form-question'), (p) => 'Merci ' + P.esc(p) + '. Dans le vrai site, votre question partirait vers ' + SITE.contact.email + '.');
@@ -754,10 +778,10 @@
       }
       const o = this.oeuvre;
       this.el.oeuvre.innerHTML = P.cadreHTML(o, sc.k, { grand: true, eager: true });
-      this.el.oeuvre.setAttribute('aria-label', o.titre + ' à l’échelle dans : ' + nom + ', ' + P.formatCourt(o));
+      this.el.oeuvre.setAttribute('aria-label', o.titre + ' à l’échelle dans : ' + nom + ', ' + P.formatCourt(o));
       this.placer(sc, anim);
       this.el.mesure.textContent = sc.w + ' cm';
-      this.el.reperes.textContent = 'Échelle réelle : ' + sc.reperes;
+      this.el.reperes.textContent = 'Échelle réelle : ' + sc.reperes;
       P.$$('[data-p]', this.r).forEach((b) => b.setAttribute('aria-pressed', b.dataset.p === this.piece ? 'true' : 'false'));
       P.$$('[data-o]', this.r).forEach((b) => b.setAttribute('aria-pressed', b.dataset.o === o.slug ? 'true' : 'false'));
       this.el.cartel.innerHTML = '<strong><a class="lien" href="' + P.lienOeuvre(o) + '">' + P.esc(o.titre) + '</a></strong><span>' + P.esc(P.formatTexte(o)) + '</span><span class="prix">' + (o.dispo ? P.euro(o.prix) : 'Vendue') + '</span>';
@@ -838,8 +862,8 @@
   P.pret = (fn) => (document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', fn) : fn());
   P.pret(() => {
     entete(); curseur(); aimants(); empreintes(); odet(); transitions(); pied();
-    P.formulaireSimule(P.$('#form-newsletter'), (p) => 'Merci ' + (p ? P.esc(p) : '') + ' ! Inscription simulée : dans le vrai site, le code de −10 % arriverait par e-mail.');
-    P.formulaireSimule(P.$('#form-contact'), (p) => 'Merci ' + (p ? P.esc(p) : '') + '. Message simulé : dans le vrai site, il partirait vers ' + SITE.contact.email + ', avec une réponse dans la journée.');
+    P.formulaireSimule(P.$('#form-newsletter'), (p) => 'Merci' + (p ? ' ' + P.esc(p) : '') + ' ! Inscription simulée : dans le vrai site, le code de −10 % arriverait par e-mail.');
+    P.formulaireSimule(P.$('#form-contact'), (p) => 'Merci' + (p ? ' ' + P.esc(p) : '') + '. Message simulé : dans le vrai site, il partirait vers ' + SITE.contact.email + ', avec une réponse dans la journée.');
     if (window.ScrollTrigger) window.addEventListener('load', () => window.ScrollTrigger.refresh());
   });
 })();

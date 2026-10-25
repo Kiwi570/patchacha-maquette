@@ -91,12 +91,12 @@
     const finie = P.parSlug['les-doigts-geles'];
     const images = [
       P.grok['accueil-lenteur-table-atelier']
-        ? { ...P.grok['accueil-lenteur-table-atelier'], alt: 'Papiers faits main, encres et pinceau posés sur une table en bois, image d’ambiance', legende: 'Papiers, encres, pinceau : la matière avant le geste.' }
+        ? { ...P.grok['accueil-lenteur-table-atelier'], alt: 'Papiers faits main, encres et pinceau posés sur une table en bois, image d’ambiance', legende: 'Papiers, encres, pinceau : la matière avant le geste.' }
         : { ...P.photos['main-dessin'], legende: 'L’arbre commence à l’encre, à main levée.' },
-      { ...P.photos['detail-echinacees'], legende: 'Détail : papiers superposés, lavis, transparences.' },
+      { ...P.photos['detail-echinacees'], legende: 'Détail : papiers superposés, lavis, transparences.' },
       { src: finie.vues[0].src, w: finie.vues[0].w, h: finie.vues[0].h, alt: finie.vues[0].alt, legende: 'Les doigts gelés, encadré, ' + finie.dimTexte.cadre + '.' }
     ];
-    pile.innerHTML = images.map((im, i) => '<figure data-couche="' + i + '"' + (i ? ' style="opacity:' + (P.mobile() || P.calme ? 1 : 0) + '"' : '') + '><img src="' + im.src + '" alt="' + esc(im.alt) + '" width="' + im.w + '" height="' + im.h + '" loading="lazy"><figcaption>' + esc(im.legende) + '</figcaption></figure>').join('');
+    pile.innerHTML = images.map((im, i) => '<figure data-couche="' + i + '"' + (i ? ' style="opacity:' + (P.mobile() || P.calme || !g ? 1 : 0) + '"' : '') + '><img src="' + im.src + '" alt="' + esc(im.alt) + '" width="' + im.w + '" height="' + im.h + '" loading="lazy"><figcaption>' + esc(im.legende) + '</figcaption></figure>').join('');
     const grille = $('[data-lenteur]');
     if (!g || P.calme || P.mobile()) return;
     grille.classList.add('js-pin');
@@ -198,7 +198,7 @@
 
   /* ---------- Regards ---------- */
   function regards() {
-    $('[data-regards]').innerHTML = P.site.temoignages.map((t) => '<blockquote><p data-encre>« ' + esc(t.texte) + ' »</p><footer>' + esc(t.nom) + ', ' + esc(t.ville) + '</footer></blockquote>').join('');
+    $('[data-regards]').innerHTML = P.site.temoignages.map((t) => '<blockquote><p data-encre>« ' + esc(t.texte) + ' »</p><footer>' + esc(t.nom) + ', ' + esc(t.ville) + '</footer></blockquote>').join('');
   }
 
   /* ---------- Textiles et formations ---------- */
@@ -262,7 +262,7 @@
     const dParis = Math.round(Math.hypot((L.paris.lon - q.lon) * Math.cos(48.4 * Math.PI / 180), L.paris.lat - q.lat) * 111.2);
     svg += '<text x="' + (W - 4) + '" y="' + (Y(48.0) - 30).toFixed(1) + '" text-anchor="end">Paris, à ' + dParis + ' km à vol d’oiseau</text></svg>';
     const photos = ['expo-st-fiacre', 'expo-concarneau', 'expo-grand-atelier-entree'].map((k) => P.photos[k]);
-    $('[data-rdv-carte]').innerHTML = '<div class="carte-rdv"><div class="carte-rdv__defile">' + svg + '</div><div class="legende"><span><i style="background:var(--bleu-logo)"></i>L’atelier</span><span><i style="background:var(--rouge)"></i>À venir</span><span><i></i>Déjà venue</span><span>Positions approximatives</span></div></div>' +
+    $('[data-rdv-carte]').innerHTML = '<div class="carte-rdv"><div class="carte-rdv__defile" tabindex="0" role="region" aria-label="Carte des rendez-vous (défilement horizontal)">' + svg + '</div><div class="legende"><span><i style="background:var(--bleu-logo)"></i>L’atelier</span><span><i style="background:var(--rouge)"></i>À venir</span><span><i></i>Déjà venue</span><span>Positions approximatives</span></div></div>' +
       '<div class="photos-expo">' + photos.map((p) => '<img src="' + (p.sm || p.src) + '" alt="' + esc(p.alt) + '" loading="lazy">').join('') + '</div>' +
       '<h3 class="h-petit">Expositions récentes</h3><ul class="liste-rdv">' + passes.map((r) => '<li class="passe"><div class="date-bloc"><span>' + esc(periode(r).replace(/^du /, '')) + '</span></div><div><h3>' + esc(r.titre) + '</h3><p><span class="etiquette">Passée</span>' + esc(L[r.lieu].nom) + '</p>' + (r.texte ? '<p>' + esc(r.texte) + '</p>' : '') + '</div></li>').join('') +
       P.site.autresLieux.map((a) => '<li class="passe"><div class="date-bloc"><span class="a-completer">' + esc(a.note) + '</span></div><div><h3>' + esc(a.titre) + '</h3><p><span class="etiquette">Passée</span>' + esc(L[a.lieu].nom) + '</p></div></li>').join('') + '</ul>';
@@ -293,7 +293,7 @@
     const maj = (p) => {
       f.style.setProperty('--p', p.toFixed(3));
       const apres = String(p > .5);
-      if (etiq.dataset.etat !== apres) { etiq.dataset.etat = apres; etiq.textContent = apres === 'true' ? 'Après : étole en soie de l’atelier' : 'Avant : tissu roulé sur les feuilles, image d’ambiance'; }
+      if (etiq.dataset.etat !== apres) { etiq.dataset.etat = apres; etiq.textContent = apres === 'true' ? 'Après : étole en soie de l’atelier' : 'Avant : tissu roulé sur les feuilles, image d’ambiance'; }
     };
     if (!g || P.calme || !ST) { maj(1); return; }
     maj(0);

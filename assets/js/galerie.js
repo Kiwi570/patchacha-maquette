@@ -213,7 +213,7 @@
   }
 
   function selonAncre() {
-    const h = decodeURIComponent(location.hash.slice(1));
+    const h = P.ancre();
     if (P.series[h]) {
       etat.serie = h; appliquer(true);
       setTimeout(() => P.allerA('#oeuvres'), 250);

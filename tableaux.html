@@ -4,11 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tableaux de Patchacha</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Tableaux contemporains originaux et totems végétaux de Patchacha : pièces uniques signées, formats, prix et disponibilités.">
-<meta name="robots" content="noindex">
+<meta name="description" content="Tableaux contemporains originaux et totems végétaux de Patchacha&nbsp;: pièces uniques signées, formats, prix et disponibilités.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Tableaux de Patchacha">
+<meta property="og:description" content="Tableaux contemporains originaux et totems végétaux de Patchacha&nbsp;: pièces uniques signées, formats, prix et disponibilités.">
+<meta property="og:image" content="https://patchacha-maquette.vercel.app/assets/img/partage-patchacha.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://patchacha-maquette.vercel.app/tableaux">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.png" type="image/png">
-<link rel="preload" href="assets/fonts/gloock.woff" as="font" type="font/woff" crossorigin>
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/gloock.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body class="page-tableaux">
@@ -16,7 +25,7 @@
 <a class="sr" href="#contenu">Aller au contenu</a>
 <header class="site-header">
   <div class="site-header__barre">
-    <a class="logo" href="index.html" aria-label="Patchacha, accueil">
+    <a class="logo" href="index.html">
       <img src="assets/img/site/logo-patchacha.png" alt="" width="58" height="58">
       <span>Patchacha<small>Artiste plasticienne, Quimper</small></span>
     </a>
@@ -33,7 +42,7 @@
         <svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><path d="M1 6c2.5-4 5-4 7.5 0s5 4 7.5 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
         <span class="mode-calme-libelle">Mode calme</span><span class="sr">Mode calme, réduire les animations</span>
       </button>
-      <button class="bouton-outil bouton-panier" type="button" aria-label="Ouvrir le panier">Panier <span class="panier-compte" data-vide="true">0</span></button>
+      <button class="bouton-outil bouton-panier" type="button" >Panier<span class="sr" data-panier-sr></span> <span class="panier-compte" data-vide="true" aria-hidden="true">0</span></button>
       <button class="bouton-outil burger" type="button" data-menu aria-expanded="false" aria-controls="menu-mobile">Menu</button>
     </div>
   </div>
@@ -60,7 +69,7 @@
         <h1 id="titre-galerie">Les tableaux</h1>
       </div>
       <div class="galerie-heros__intro">
-        <p class="chapo">Un tableau contemporain, c’est bien plus qu’une image : c’est une matière vivante, un geste capté sur le support. Mes créations originales, toutes uniques et réalisées à la main, sont pensées pour habiter vos murs.</p>
+        <p class="chapo">Un tableau contemporain, c’est bien plus qu’une image&nbsp;: c’est une matière vivante, un geste capté sur le support. Mes créations originales, toutes uniques et réalisées à la main, sont pensées pour habiter vos murs.</p>
         <div class="boutons">
           <a class="btn" href="#salles" data-aimant>Visiter les salles</a>
           <a class="btn btn--ligne" href="#oeuvres" data-aimant>Voir toutes les œuvres</a>
@@ -100,7 +109,7 @@
   <section class="enveloppe" aria-label="Toutes les œuvres">
     <div class="grille-oeuvres" data-grille></div>
     <div class="encart">
-      <h2 class="h-petit">Une hésitation sur le format ou la mise en valeur ?</h2>
+      <h2 class="h-petit">Une hésitation sur le format ou la mise en valeur&nbsp;?</h2>
       <p class="discret">Je serai ravie de vous guider dans votre choix. Les collections évoluent au fil du temps, selon l’inspiration, les saisons et les matières.</p>
       <div class="boutons"><a class="btn btn--ligne" href="index.html#voir-au-mur" data-page>Essayer une œuvre chez moi</a><a class="btn btn--ligne" href="index.html#contact" data-page>Écrire à l’artiste</a></div>
     </div>
@@ -116,9 +125,9 @@
         <h3>L’atelier</h3>
         <ul>
           <li>Atelier à Quimper, visites sur rendez-vous</li>
-          <li><span>contact@atelierpatchacha.fr</span></li>
+          <li><a class="mail-link" href="mailto:contact@atelierpatchacha.fr">contact@atelierpatchacha.fr</a></li>
           <li>Réponse dans la journée</li>
-          <li>Téléphone : <span class="a-completer">à compléter</span></li>
+          <li>Téléphone&nbsp;: <span class="a-completer">à compléter</span></li>
         </ul>
       </div>
       <div>
@@ -154,7 +163,7 @@
       <a class="lien" href="https://www.atelierpatchacha.fr/conditions-generales-de-vente" target="_blank" rel="noopener">CGV</a>
       <a class="lien" href="https://www.atelierpatchacha.fr/politique-de-confidentialite" target="_blank" rel="noopener">Confidentialité</a>
       <a class="lien" href="https://www.atelierpatchacha.fr/retracta" target="_blank" rel="noopener">Droit de rétractation</a>
-      <span>Maquette de démonstration : panier, paiement et formulaires simulés.</span>
+      <span>Maquette de démonstration&nbsp;: panier, paiement et formulaires simulés.</span>
     </div>
   </div>
 </footer>

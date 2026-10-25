@@ -7,7 +7,7 @@
   const { $, $$, esc } = P;
   let voile = null, vueCourante = 0, oeuvre = null, mur = null;
 
-  const slugCourant = () => { const h = decodeURIComponent(location.hash.slice(1)); return P.parSlug[h] ? h : P.oeuvres[0].slug; };
+  const slugCourant = () => { const h = P.ancre(); return P.parSlug[h] ? h : P.oeuvres[0].slug; };
 
   function paragraphes(txt) {
     const phrases = txt.replace(/\s*👉\s*/g, ' ').match(/[^.!?…]+[.!?…]+["»”]?\s*|[^.!?…]+$/g) || [txt];
@@ -94,6 +94,7 @@
     document.title = o.titre + ', Patchacha';
     const fiche = $('[data-fiche]');
     fiche.style.backgroundColor = o.teinte;
+    fiche.style.setProperty('--encre-3', '#5F594F'); // gris secondaire plus soutenu sur la teinte de l'œuvre (≥ 4,5:1)
     $('[data-ariane-serie]').textContent = serie.titre;
     $('[data-ariane-serie]').href = 'tableaux.html#' + o.serie;
     $('[data-ariane-titre]').textContent = o.titre;
@@ -102,14 +103,14 @@
     $('[data-titre]').textContent = o.titre;
     $('[data-prix]').innerHTML = o.dispo
       ? '<b>' + P.euro(o.prix) + '</b><span class="dispo">Disponible, pièce unique</span><small>TVA non applicable, article 293 B du CGI. Frais de livraison calculés à la commande.</small>'
-      : '<b>Vendue</b><span class="dispo-vendue"><i class="pastille" aria-hidden="true"></i> Cette œuvre a trouvé sa place</span><small>Prix de vente indiqué sur le site : ' + P.euro(o.prix) + '.</small>';
+      : '<b>Vendue</b><span class="dispo-vendue"><i class="pastille" aria-hidden="true"></i> Cette œuvre a trouvé sa place</span><small>Prix de vente indiqué sur le site : ' + P.euro(o.prix) + '.</small>';
     $('[data-actions]').innerHTML = (o.dispo ? '<button class="btn" type="button" data-aimant data-adopter="' + o.slug + '">Adopter cette œuvre</button>' : '<a class="btn" href="index.html#lettre" data-page>Être prévenu des nouvelles œuvres</a>') +
       '<button class="btn btn--ligne" type="button" data-question>Poser une question</button><a class="btn btn--ligne" href="#voir-au-mur">La voir sur un mur</a>';
     $('[data-question]').addEventListener('click', () => P.questionOeuvre(o));
     $('[data-caracteristiques]').innerHTML = caracteristiques(o);
     $('[data-livraison]').textContent = 'Expédition sous 3 jours ouvrés avec un numéro de suivi, depuis l’atelier en Bretagne. Emballage soigné et solide.' + (o.retrait ? ' Possibilité de retrait à l’atelier, à Quimper.' : '');
     $('[data-description]').innerHTML = paragraphes(o.description);
-    $('[data-nom-site]').innerHTML = 'Sur le site actuel : <a class="lien" href="' + o.url + '" target="_blank" rel="noopener">' + esc(o.nomSite) + '</a>';
+    $('[data-nom-site]').innerHTML = 'Sur le site actuel : <a class="lien" href="' + o.url + '" target="_blank" rel="noopener">' + esc(o.nomSite) + '</a>';
     $('[data-miniatures]').innerHTML = o.vues.map((v, i) => '<button type="button" data-i="' + i + '" aria-label="Vue ' + (i + 1) + '"><img src="' + v.sm + '" alt="" loading="lazy"></button>').join('');
     afficherVue(0, false);
     // Voir au mur
@@ -151,7 +152,7 @@
       if (e.key === 'ArrowLeft') afficherVue((vueCourante - 1 + oeuvre.vues.length) % oeuvre.vues.length, true);
     });
     zone.tabIndex = 0;
-    zone.setAttribute('aria-label', 'Visionneuse : flèches gauche et droite pour changer de vue');
+    zone.setAttribute('aria-label', 'Visionneuse : flèches gauche et droite pour changer de vue');
     loupe();
     window.addEventListener('hashchange', () => { if (P.parSlug[decodeURIComponent(location.hash.slice(1))]) rendre(false); });
     P.encre();

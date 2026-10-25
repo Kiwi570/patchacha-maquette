@@ -15,7 +15,7 @@ window.PATCHACHA_SITE = {
 
   temoignages: [
     { nom: 'Marie', ville: 'Fouesnant', texte: 'Des tableaux, doux, aériens, qui portent un message fort. Vraiment original' },
-    { nom: 'Philippe', ville: 'Pont-Croix', texte: 'Très joli, tant au niveau de l’effet produit que de la réalisation. La texture est magnifique. Un tableau qui attire le regard !' },
+    { nom: 'Philippe', ville: 'Pont-Croix', texte: 'Très joli, tant au niveau de l’effet produit que de la réalisation. La texture est magnifique. Un tableau qui attire le regard !' },
     { nom: 'Anne', ville: 'Paris', texte: 'Ce tableau est fin, élégant. Il dégage une atmosphère mystérieuse et paisible à la fois, que je vais avoir plaisir à retrouver dans mon salon.' }
   ],
 
@@ -36,7 +36,7 @@ window.PATCHACHA_SITE = {
   rendezvous: [
     { titre: 'Marché d’automne au château des Garennes', debut: '2026-11-08', fin: '2026-11-08', lieu: 'garennes',
       adresse: 'Lieu-dit les Garennes, Clohars-Fouesnant', horaires: '10 h – 18 h, sous chapiteau chauffé, entrée gratuite',
-      texte: 'Sélection d’œuvres (tableaux et textiles d’art) autour de l’automne. Manifestation reportée au 8 novembre : trop de vent le 25 octobre.',
+      texte: 'Sélection d’œuvres (tableaux et textiles d’art) autour de l’automne. Manifestation reportée au 8 novembre : trop de vent le 25 octobre.',
       photo: 'chateau-garennes' },
     { titre: 'Salon Artisan’Art', debut: '2026-11-20', fin: '2026-11-21', lieu: 'chateaulin',
       adresse: 'Espace Coatigrac’h, Châteaulin', horaires: 'Samedi 14 h – 19 h, dimanche 10 h – 18 h',
@@ -48,13 +48,13 @@ window.PATCHACHA_SITE = {
     { titre: 'Chapelle Saint-Fiacre', debut: '2026-09-28', fin: '2026-10-04', lieu: 'concarneau',
       texte: 'Sélection d’œuvres autour de l’arbre.', photo: 'expo-st-fiacre' },
     { titre: 'Le BioRestau', debut: '2026-06-21', fin: '2026-09-22', periode: 'Été 2026', lieu: 'quimper',
-      texte: 'Exposition d’œuvres « Mémoire des arbres ».' },
+      texte: 'Exposition d’œuvres « Mémoire des arbres ».' },
     { titre: 'Galerie Le Grand Atelier', debut: '2026-04-20', fin: '2026-05-10', lieu: 'quimper',
       texte: 'Le rendez-vous 2026 au Grand Atelier, avec une exposition essentiellement centrée sur les arbres.', photo: 'expo-grand-atelier-entree' },
     { titre: 'Chapelle Saint-Fiacre', debut: '2025-09-22', fin: '2025-09-28', lieu: 'concarneau',
       texte: 'J’ai pu y accrocher mes œuvres en volume.', photo: 'expo-concarneau' },
     { titre: 'Chapelle de Kerbader', debut: '2025-08-11', fin: '2025-08-18', lieu: 'fouesnant',
-      texte: 'La série des miniatures : des œuvres 10 × 10 cm, encadrées 20 × 20 cm.', photo: 'expo-kerbader' },
+      texte: 'La série des miniatures : des œuvres 10 × 10 cm, encadrées 20 × 20 cm.', photo: 'expo-kerbader' },
     { titre: 'Galerie Le Grand Atelier', debut: '2025-05-01', fin: '2025-05-31', periode: 'Mai 2025', lieu: 'quimper',
       texte: 'Un rendez-vous régulier, chaque année, dans ce joli lieu.', photo: 'expo-grand-atelier' }
   ],
