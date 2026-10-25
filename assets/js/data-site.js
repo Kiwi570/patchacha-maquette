@@ -77,6 +77,10 @@ window.PATCHACHA_SITE = {
   // centreCm : hauteur du centre de l'œuvre au-dessus du sol ; basY : bas de l'œuvre (si pas de sol visible) ;
   // fx, fy : point de cadrage quand l'image est recadrée.
   pieces: {
+    salon: { image: 'piece-salon', cmPx: 2.6, solY: 612, ancreX: 541, centreCm: 120, basMinCm: 97, fx: .5, fy: .5,
+      reperes: 'canapé trois places d’environ 240 cm',
+      portrait: { image: 'piece-salon-mobile', cmPx: 3.9, solY: 1010, ancreX: 500, centreCm: 116, basMinCm: 91, fx: .5, fy: .72,
+        reperes: 'dossier du canapé à environ 70 cm du sol' } },
     bureau: { image: 'piece-bureau', cmPx: 4.24, solY: 840, ancreX: 790, centreCm: 150, basMinCm: 130, fx: .47, fy: .5,
       reperes: 'bureau de 75 cm de haut' },
     alcove: { image: 'piece-alcove', cmPx: 14, ancreX: 620, basY: 840, fx: .5, fy: .67,

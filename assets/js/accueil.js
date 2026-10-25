@@ -23,23 +23,31 @@
       document.body.appendChild(o);
       const fondVoile = $('.ouverture__voile', o);
       Object.assign(fondVoile.style, { position: 'absolute', inset: '0' });
-      const voile = new P.Voile(fondVoile, { progress: 0, graine: 3.3 });
+      // le voile d'ouverture est fait des papiers photographiés (image d'ambiance Grok)
+      const papier = P.grok[innerWidth < innerHeight ? 'accueil-ouverture-papiers-mobile' : 'accueil-ouverture-papiers'] || P.grok['accueil-ouverture-papiers'];
+      const voile = new P.Voile(fondVoile, { progress: 0, graine: 3.3, texture: papier && papier.src });
+      o.style.visibility = 'hidden';
       const traits = $$('path', o);
       traits.forEach((p) => { const L = p.getTotalLength(); p.style.strokeDasharray = L; p.style.strokeDashoffset = L; });
       const logo = $('.ouverture__logo', o);
       const retirerPre = () => { const pre = $('.ouverture-pre'); pre && pre.remove(); };
-      const tl = g.timeline({ onComplete: () => { voile.detruire(); o.remove(); } });
-      if (dejaVu) {
-        g.set($('.ouverture__centre', o), { opacity: 0 });
-        tl.add(() => { retirerPre(); voile.vers(1, 1.0, 'power2.inOut'); }, .05).add(() => fini(), .15).to({}, { duration: 1.1 });
-        return;
-      }
-      tl.add(retirerPre, 0).to(traits, { strokeDashoffset: 0, duration: 1.0, stagger: .08, ease: 'power2.inOut' }, 0)
-        .fromTo(logo, { opacity: 0, scale: 1.25 }, { opacity: 1, scale: 1, duration: .45, ease: 'back.out(2)' }, .75)
-        .to([$('.ouverture__centre', o), logo], { opacity: 0, duration: .5, ease: 'power1.in' }, 1.45)
-        .add(() => fini(), 1.35)
-        .add(() => { voile.vers(1, 1.25, 'power2.inOut'); }, 1.4)
-        .to({}, { duration: 1.3 }, 1.4);
+      const lancer = () => {
+        o.style.visibility = '';
+        const tl = g.timeline({ onComplete: () => { voile.detruire(); o.remove(); } });
+        if (dejaVu) {
+          g.set($('.ouverture__centre', o), { opacity: 0 });
+          tl.add(() => { retirerPre(); voile.vers(1, 1.0, 'power2.inOut'); }, .05).add(() => fini(), .15).to({}, { duration: 1.1 });
+          return;
+        }
+        tl.add(retirerPre, 0).to(traits, { strokeDashoffset: 0, duration: 1.0, stagger: .08, ease: 'power2.inOut' }, 0)
+          .fromTo(logo, { opacity: 0, scale: 1.25 }, { opacity: 1, scale: 1, duration: .45, ease: 'back.out(2)' }, .75)
+          .to([$('.ouverture__centre', o), logo], { opacity: 0, duration: .5, ease: 'power1.in' }, 1.45)
+          .add(() => fini(), 1.35)
+          .add(() => { voile.vers(1, 1.25, 'power2.inOut'); }, 1.4)
+          .to({}, { duration: 1.3 }, 1.4);
+      };
+      // on attend le papier (au plus 0,9 s) : le pré-voile CSS montre déjà la même image
+      Promise.race([voile.pret, new Promise((r) => setTimeout(r, 900))]).then(lancer);
     });
   }
 
@@ -151,8 +159,8 @@
     }
     const distance = () => Math.max(0, piste.scrollWidth - innerWidth);
     const skew = g.quickTo(piste, 'skewX', { duration: .5, ease: 'power3' });
-    g.to(piste, {
-      x: () => -distance(), ease: 'none',
+    const fond = $('.salle__fond', section);
+    const tl = g.timeline({
       scrollTrigger: {
         trigger: section, start: 'top top', end: () => '+=' + distance(), pin: true, scrub: .8, invalidateOnRefresh: true, anticipatePin: 1,
         onUpdate: (s) => {
@@ -164,6 +172,9 @@
         onScrubComplete: () => skew(0)
       }
     });
+    tl.to(piste, { x: () => -distance(), ease: 'none' }, 0);
+    // le mur photographié glisse plus lentement que les œuvres, comme un travelling
+    if (fond) tl.to(fond, { xPercent: -18, ease: 'none' }, 0);
     majTeinte();
   }
 
@@ -273,6 +284,29 @@
     }));
   }
 
+  /* ---------- Empreintes : le tissu roulé s'efface et laisse voir l'étole ---------- */
+  function avantApres() {
+    const f = $('[data-avant-apres]');
+    const avant = f && $('.avant', f);
+    if (!avant || avant.hidden) return;
+    const etiq = $('[data-etiquette]', f);
+    const maj = (p) => {
+      f.style.setProperty('--p', p.toFixed(3));
+      const apres = String(p > .5);
+      if (etiq.dataset.etat !== apres) { etiq.dataset.etat = apres; etiq.textContent = apres === 'true' ? 'Après : étole en soie de l’atelier' : 'Avant : tissu roulé sur les feuilles, image d’ambiance'; }
+    };
+    if (!g || P.calme || !ST) { maj(1); return; }
+    maj(0);
+    ST.create({ trigger: f, start: 'top 72%', end: 'bottom 38%', scrub: .6, onUpdate: (s) => maj(s.progress) });
+  }
+
+  /* ---------- Contact : une goutte d'encre se diffuse ---------- */
+  function encreContact() {
+    const im = $('.contact__encre');
+    if (!im || !g || P.calme) return;
+    g.fromTo(im, { scale: .4, rotation: -14, opacity: 0 }, { scale: 1, rotation: 0, opacity: .32, ease: 'power1.out', scrollTrigger: { trigger: '#contact', start: 'top 85%', end: 'top 20%', scrub: 1 } });
+  }
+
   /* ---------- Lettre d'information : les feuilles se posent sur le lin ---------- */
   function lettre() {
     const fond = $('.newsletter__fond');
@@ -291,7 +325,9 @@
     textiles();
     rendezvous();
     univers();
+    avantApres();
     lettre();
+    encreContact();
     P.traces();
     await ouverture();
     herosEntree();

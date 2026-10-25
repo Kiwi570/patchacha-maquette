@@ -2707,6 +2707,12 @@ window.PATCHACHA_DATA = {
   }
  },
  "grok": {
+  "accueil-expositions-granit": {
+   "src": "assets/img/grok/accueil-expositions-granit.webp",
+   "sm": "assets/img/grok/accueil-expositions-granit-900.webp",
+   "w": 1168,
+   "h": 784
+  },
   "accueil-lenteur-table-atelier": {
    "src": "assets/img/grok/accueil-lenteur-table-atelier.webp",
    "sm": "assets/img/grok/accueil-lenteur-table-atelier-600.webp",
@@ -2719,6 +2725,72 @@ window.PATCHACHA_DATA = {
    "w": 1672,
    "h": 941
   },
+  "accueil-ouverture-papiers-mobile": {
+   "src": "assets/img/grok/accueil-ouverture-papiers-mobile.webp",
+   "sm": "assets/img/grok/accueil-ouverture-papiers-mobile-600.webp",
+   "w": 784,
+   "h": 1168
+  },
+  "accueil-ouverture-papiers": {
+   "src": "assets/img/grok/accueil-ouverture-papiers.webp",
+   "sm": "assets/img/grok/accueil-ouverture-papiers-900.webp",
+   "w": 1168,
+   "h": 784
+  },
+  "accueil-pied-rive-brume": {
+   "src": "assets/img/grok/accueil-pied-rive-brume.webp",
+   "sm": "assets/img/grok/accueil-pied-rive-brume-900.webp",
+   "w": 1168,
+   "h": 784
+  },
+  "accueil-selection-mur-galerie": {
+   "src": "assets/img/grok/accueil-selection-mur-galerie.webp",
+   "sm": "assets/img/grok/accueil-selection-mur-galerie-900.webp",
+   "w": 1168,
+   "h": 784
+  },
+  "accueil-univers-rouleau-ecoprint": {
+   "src": "assets/img/grok/accueil-univers-rouleau-ecoprint.webp",
+   "sm": "assets/img/grok/accueil-univers-rouleau-ecoprint-600.webp",
+   "w": 784,
+   "h": 1168
+  },
+  "galerie-ouverture-salle-mobile": {
+   "src": "assets/img/grok/galerie-ouverture-salle-mobile.webp",
+   "sm": "assets/img/grok/galerie-ouverture-salle-mobile-600.webp",
+   "w": 784,
+   "h": 1168
+  },
+  "galerie-ouverture-salle": {
+   "src": "assets/img/grok/galerie-ouverture-salle.webp",
+   "sm": "assets/img/grok/galerie-ouverture-salle-900.webp",
+   "w": 1168,
+   "h": 784
+  },
+  "galerie-salle-arbres": {
+   "src": "assets/img/grok/galerie-salle-arbres.webp",
+   "sm": "assets/img/grok/galerie-salle-arbres-900.webp",
+   "w": 1168,
+   "h": 784
+  },
+  "galerie-salle-fleurs": {
+   "src": "assets/img/grok/galerie-salle-fleurs.webp",
+   "sm": "assets/img/grok/galerie-salle-fleurs-900.webp",
+   "w": 1168,
+   "h": 784
+  },
+  "galerie-salle-mer": {
+   "src": "assets/img/grok/galerie-salle-mer.webp",
+   "sm": "assets/img/grok/galerie-salle-mer-900.webp",
+   "w": 1168,
+   "h": 784
+  },
+  "galerie-salle-petits-formats": {
+   "src": "assets/img/grok/galerie-salle-petits-formats.webp",
+   "sm": "assets/img/grok/galerie-salle-petits-formats-900.webp",
+   "w": 1168,
+   "h": 784
+  },
   "piece-alcove": {
    "src": "assets/img/grok/piece-alcove.webp",
    "sm": "assets/img/grok/piece-alcove-600.webp",
@@ -2730,6 +2802,30 @@ window.PATCHACHA_DATA = {
    "sm": "assets/img/grok/piece-bureau-900.webp",
    "w": 1672,
    "h": 941
+  },
+  "piece-salon-mobile": {
+   "src": "assets/img/grok/piece-salon-mobile.webp",
+   "sm": "assets/img/grok/piece-salon-mobile-600.webp",
+   "w": 784,
+   "h": 1168
+  },
+  "piece-salon": {
+   "src": "assets/img/grok/piece-salon.webp",
+   "sm": "assets/img/grok/piece-salon-900.webp",
+   "w": 1168,
+   "h": 784
+  },
+  "texture-encre-diffusion": {
+   "src": "assets/img/grok/texture-encre-diffusion.webp",
+   "sm": "assets/img/grok/texture-encre-diffusion-900.webp",
+   "w": 1168,
+   "h": 784
+  },
+  "texture-papier-coton": {
+   "src": "assets/img/grok/texture-papier-coton.webp",
+   "sm": "assets/img/grok/texture-papier-coton-900.webp",
+   "w": 1168,
+   "h": 784
   }
  }
 };

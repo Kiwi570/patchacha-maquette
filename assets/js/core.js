@@ -79,11 +79,13 @@
   const FRAG = [
     'precision highp float;',
     'uniform vec2 uRes; uniform float uProgress; uniform vec2 uMouse; uniform float uSeed;',
+    'uniform sampler2D uTex; uniform float uHasTex; uniform vec2 uTexRes;',
     'varying vec2 vUv;',
     'float hash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }',
     'float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);',
     '  return mix(mix(hash(i), hash(i + vec2(1., 0.)), f.x), mix(hash(i + vec2(0., 1.)), hash(i + vec2(1., 1.)), f.x), f.y); }',
     'float fbm(vec2 p){ float v = 0., a = .5; for (int i = 0; i < 5; i++){ v += a * noise(p); p *= 2.03; a *= .5; } return v; }',
+    'vec2 couvre(vec2 uv){ float ra = uRes.x / max(uRes.y, 1.), ta = uTexRes.x / max(uTexRes.y, 1.); vec2 k = ra > ta ? vec2(1., ta / ra) : vec2(ra / ta, 1.); return (uv - .5) * k + .5; }',
     'void main(){',
     '  float asp = uRes.x / max(uRes.y, 1.); vec2 p = vec2(vUv.x * asp, vUv.y);',
     '  vec3 col = vec3(0.); float al = 0.;',
@@ -97,6 +99,8 @@
     '    vec3 base = fi < .5 ? vec3(.902, .863, .796) : (fi < 1.5 ? vec3(.925, .894, .84) : vec3(.965, .945, .91));',
     '    float fib = noise(p * vec2(95., 60.) + fi * 13.) * .03 + noise(p * 260. + fi) * .035 - .03;',
     '    vec3 c = base - fib + (fbm(p * 7. + fi) - .5) * .035;',
+    '    if (uHasTex > .5){ vec2 tu = couvre(vUv); tu = fi > 1.5 ? tu : (fi > .5 ? (tu - .5) * .62 + vec2(.36, .58) : (tu - .5) * .5 + vec2(.66, .34));',
+    '      vec3 t = texture2D(uTex, clamp(tu, .002, .998)).rgb; c = fi > 1.5 ? t * .97 + fib * .2 : mix(c, t, .78); }',
     '    c = mix(c, c * vec3(.86, .82, .76), rim);',
     '    float a = keep;',
     '    col = c * a + col * (1. - a); al = a + al * (1. - a);',
@@ -111,6 +115,8 @@
       this.progress = opts.progress == null ? 0 : opts.progress;
       this.souris = [0, 0];
       this.ok = false;
+      this.pret = Promise.resolve();
+      this.texUrl = opts.texture || '';
       if (!P.webgl || !window.OGL) { this.repli(); return; }
       try {
         const { Renderer, Program, Mesh, Triangle } = window.OGL;
@@ -120,19 +126,32 @@
         this.el.appendChild(gl.canvas);
         this.program = new Program(gl, {
           vertex: VERT, fragment: FRAG, transparent: true,
-          uniforms: { uRes: { value: [1, 1] }, uProgress: { value: this.progress }, uMouse: { value: [0, 0] }, uSeed: { value: opts.graine || Math.random() * 10 } }
+          uniforms: { uRes: { value: [1, 1] }, uProgress: { value: this.progress }, uMouse: { value: [0, 0] }, uSeed: { value: opts.graine || Math.random() * 10 }, uTex: { value: null }, uHasTex: { value: 0 }, uTexRes: { value: [1, 1] } }
         });
+        this.texture = new window.OGL.Texture(gl, { generateMipmaps: false });
+        this.program.uniforms.uTex.value = this.texture;
         this.mesh = new Mesh(gl, { geometry: new Triangle(gl), program: this.program });
         this.ok = true;
         this.taille();
         this.ro = new ResizeObserver(() => { this.taille(); this.rendu(); });
         this.ro.observe(this.el);
         this.rendu();
+        if (opts.texture) {
+          // papier photographié : la texture est chargée avant de lever le voile
+          this.pret = new Promise((ok) => {
+            const im = new Image();
+            im.decoding = 'async';
+            im.onload = () => { if (this.ok) { this.texture.image = im; this.program.uniforms.uHasTex.value = 1; this.program.uniforms.uTexRes.value = [im.naturalWidth, im.naturalHeight]; this.rendu(); } ok(); };
+            im.onerror = () => ok();
+            im.src = opts.texture;
+          });
+        }
       } catch (e) { this.repli(); }
     }
     repli() {
       this.ok = false;
       this.el.classList.add('voile--repli');
+      if (this.texUrl) Object.assign(this.el.style, { backgroundImage: 'url(' + this.texUrl + ')', backgroundSize: 'cover', backgroundPosition: '50% 50%' });
       this.el.style.opacity = String(1 - this.progress);
     }
     taille() {
@@ -672,7 +691,13 @@
     }
     // Pièce photographiée (image Grok calée à l'échelle) ou pièce dessinée en code
     photo(cle) {
-      const cfg = P.site.pieces && P.site.pieces[cle];
+      let cfg = P.site.pieces && P.site.pieces[cle];
+      // cadrage vertical dédié quand le cadre de la pièce est en hauteur (mobile)
+      if (cfg && cfg.portrait && this.el && this.el.piece) {
+        const R = this.el.piece.getBoundingClientRect();
+        const alt = D.grok && D.grok[cfg.portrait.image];
+        if (alt && R.width && R.width < R.height * .95) cfg = cfg.portrait;
+      }
       const img = cfg && D.grok && D.grok[cfg.image];
       return cfg && img ? { ...cfg, ...img } : null;
     }
@@ -773,6 +798,9 @@
 
   /* ---------- Pied de page : les lettres se posent comme des papiers découpés ---------- */
   function pied() {
+    // la rive dans la brume (image d'ambiance) se rapproche doucement
+    const rive = P.$('.pied__rive');
+    if (rive && g && !P.calme && window.ScrollTrigger) g.fromTo(rive, { scale: 1.14, yPercent: -5 }, { scale: 1, yPercent: 0, ease: 'none', scrollTrigger: { trigger: '.site-footer', start: 'top bottom', end: 'bottom bottom', scrub: .8 } });
     const el = P.$('.pied__grand');
     if (!el || !g || P.calme || !window.SplitText) return;
     const sp = new window.SplitText(el, { type: 'chars', charsClass: 'lettre' });

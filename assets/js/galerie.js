@@ -6,22 +6,89 @@
   const ST = window.ScrollTrigger;
   const { $, $$, esc } = P;
 
-  /* ---------- Le mur d'ouverture : les œuvres viennent s'accrocher ---------- */
+  /* ---------- Le mur d'ouverture : une salle d'exposition, les œuvres viennent s'accrocher à l'échelle ---------- */
+  // Calage des images d'ambiance (pixels de l'image d'origine) : cm → px sur le mur du fond, ligne du sol, bords du mur
+  const SALLE = {
+    paysage: { image: 'galerie-ouverture-salle', cmPx: 1.6, solY: 580, mur: [262, 918], x0: 120, x1: 1060, sol: .1,
+      oeuvres: ['souffle-clair', 'arbre-girafe', 'les-rochers', 'cascade-de-lumiere', 'embruns'] },
+    portrait: { image: 'galerie-ouverture-salle-mobile', cmPx: 3.1, solY: 925, mur: [100, 755], x0: 60, x1: 755, sol: .09,
+      oeuvres: ['arbre-girafe', 'embruns', 'les-rochers'], grappe: true }
+  };
+  const AXE_CM = 150, ECART_CM = 22;
+
   function murOuverture() {
     const mur = $('[data-mur-ouverture]');
+    let premier = true;
+    const dessiner = () => {
+      const R = mur.getBoundingClientRect();
+      if (!R.width) return;
+      const cfg = SALLE[R.width < R.height ? 'portrait' : 'paysage'];
+      const ph = P.grok[cfg.image];
+      if (!ph) { mur.classList.add('mur-ouverture--simple'); return murSimple(mur); }
+      // l'image couvre le cadre, le mur du fond occupe la largeur utile, le sol reste visible en bas
+      let s = Math.max(R.width / (cfg.x1 - cfg.x0), R.height / ph.h);
+      const offX = Math.min(0, Math.max(R.width - ph.w * s, -cfg.x0 * s));
+      const offY = Math.min(0, Math.max(R.height - ph.h * s, R.height * (1 - cfg.sol) - cfg.solY * s));
+      const k = cfg.cmPx * s;
+      const cx = offX + (cfg.mur[0] + cfg.mur[1]) / 2 * s;
+      const axe = offY + (cfg.solY - AXE_CM * cfg.cmPx) * s;
+      const liste = cfg.oeuvres.map((sl) => P.parSlug[sl]).filter(Boolean);
+      const pos = [];
+      if (cfg.grappe && liste.length === 3) {
+        // accrochage en grappe : une grande œuvre, deux petites empilées à sa droite
+        const [a, b, c] = liste.map((o) => P.dims(o));
+        const e = 8;
+        const largeur = a[0] + e + Math.max(b[0], c[0]);
+        const x0 = -largeur / 2;
+        pos.push([x0 + a[0] / 2, 0]);
+        const hCol = b[1] + e + c[1];
+        pos.push([x0 + a[0] + e + b[0] / 2, -hCol / 2 + b[1] / 2]);
+        pos.push([x0 + a[0] + e + c[0] / 2, hCol / 2 - c[1] / 2]);
+      } else {
+        const tot = liste.reduce((t, o) => t + P.dims(o)[0], 0) + ECART_CM * (liste.length - 1);
+        let x = -tot / 2;
+        liste.forEach((o) => { const w = P.dims(o)[0]; pos.push([x + w / 2, 0]); x += w + ECART_CM; });
+      }
+      const src = R.width > 900 ? ph.src : ph.sm;
+      mur.innerHTML = '<img class="mur-ouverture__salle" src="' + src + '" alt="" style="left:' + offX.toFixed(1) + 'px;top:' + offY.toFixed(1) + 'px;width:' + (ph.w * s).toFixed(1) + 'px;height:' + (ph.h * s).toFixed(1) + 'px">' +
+        liste.map((o, i) => {
+          const [w, h] = P.dims(o);
+          const l = cx + pos[i][0] * k - (w * k) / 2, t = axe + pos[i][1] * k - (h * k) / 2;
+          return '<a class="mur-ouverture__oeuvre" href="' + P.lienOeuvre(o) + '" data-curseur="Voir" aria-label="' + esc(o.titre) + ', voir la fiche" style="left:' + l.toFixed(1) + 'px;top:' + t.toFixed(1) + 'px">' + P.cadreHTML(o, k, { eager: true }) + '</a>';
+        }).join('') +
+        '<p class="mur-ouverture__legende">Image d’ambiance. Œuvres à l’échelle, centrées à ' + AXE_CM + ' cm du sol.</p>';
+      // la lumière vient de la fenêtre, à gauche : les ombres partent vers la droite
+      $$('.cadre, .toile', mur).forEach((c) => { c.style.setProperty('--ombre-x', '7'); c.style.setProperty('--ombre-y', '9'); });
+      if (premier && g && !P.calme) {
+        const pieces = $$('.cadre, .toile', mur);
+        g.from(pieces, { y: -160, opacity: 0, rotation: (i) => (i % 2 ? 7 : -6), duration: 1.1, stagger: .12, ease: 'power3.out', delay: .35 });
+        g.to(pieces, { rotation: (i) => (i % 2 ? -1.2 : 1), duration: .5, stagger: .12, delay: 1.25, ease: 'sine.inOut', yoyo: true, repeat: 1 });
+        g.fromTo($('.mur-ouverture__salle', mur), { scale: 1.06 }, { scale: 1, duration: 2.2, ease: 'power2.out' });
+      }
+      premier = false;
+    };
+    dessiner();
+    let l = 0, taille = mur.clientWidth + 'x' + mur.clientHeight;
+    new ResizeObserver(() => {
+      const t = mur.clientWidth + 'x' + mur.clientHeight;
+      if (t === taille) return;
+      taille = t; cancelAnimationFrame(l); l = requestAnimationFrame(dessiner);
+    }).observe(mur);
+  }
+
+  // Repli sans image d'ambiance : mur uni
+  function murSimple(mur) {
     const liste = ['souffle-clair', 'arbre-girafe', 'les-rochers', 'cascade-de-lumiere', 'embruns'].map((s) => P.parSlug[s]);
     const larg = mur.clientWidth - 40, haut = Math.max(260, mur.clientHeight - 110);
     const somme = liste.reduce((t, o) => t + P.dims(o)[0], 0);
     const gap = Math.min(40, larg * .04);
     const k = Math.max(2.2, Math.min(6.5, (larg - gap * (liste.length - 1)) / somme, haut / Math.max(...liste.map((o) => P.dims(o)[1]))));
     mur.innerHTML = liste.map((o) => '<a href="' + P.lienOeuvre(o) + '" data-curseur="Voir" aria-label="' + esc(o.titre) + '" style="text-decoration:none">' + P.cadreHTML(o, k, { eager: true }) + '</a>').join('');
-    if (!g || P.calme) return;
-    const pieces = $$('.cadre, .toile', mur);
-    g.from(pieces, { y: -160, opacity: 0, rotation: (i) => (i % 2 ? 7 : -6), duration: 1.1, stagger: .12, ease: 'power3.out', delay: .35 });
-    g.to(pieces, { rotation: (i) => (i % 2 ? -1.2 : 1), duration: .5, stagger: .12, delay: 1.25, ease: 'sine.inOut', yoyo: true, repeat: 1 });
   }
 
   /* ---------- Les salles ---------- */
+  // Une image d'ambiance (Grok) ouvre chaque salle ; les totems gardent un panneau uni
+  const AMBIANCES = { arbres: ['galerie-salle-arbres', '18% 72%'], fleurs: ['galerie-salle-fleurs', '58% 60%'], mer: ['galerie-salle-mer', '40% 50%'], miniatures: ['galerie-salle-petits-formats', '30% 62%'] };
   function salles() {
     const mur = $('[data-salles]');
     const section = $('[data-salle-section]');
@@ -34,7 +101,11 @@
     parSerie.forEach((p, i) => {
       const t = p.oeuvres[0] ? p.oeuvres[0].teinte : '';
       if (i) html += '<span class="salle__separateur" aria-hidden="true"></span>';
-      html += '<div class="salle__titre-mur" data-teinte="' + t + '" style="height:' + zone + 'px;align-content:center"><span>' + esc(p.s.titre) + '</span><small>' + esc(p.s.texte) + ' ' + p.oeuvres.length + ' œuvres.</small></div>';
+      const [cleAmb, cadrage] = AMBIANCES[p.cle] || [];
+      const amb = P.grok[cleAmb];
+      html += '<div class="salle__titre-mur' + (amb ? ' a-ambiance' : '') + '" data-teinte="' + t + '" style="height:' + zone + 'px;align-content:' + (amb ? 'end' : 'center') + '">' +
+        (amb ? '<img class="salle__ambiance" src="' + amb.sm + '" srcset="' + amb.sm + ' 900w, ' + amb.src + ' ' + amb.w + 'w" sizes="400px" alt="" loading="lazy" style="object-position:' + cadrage + '">' : '') +
+        '<span>' + esc(p.s.titre) + '</span><small>' + esc(p.s.texte) + ' ' + p.oeuvres.length + ' œuvres.</small></div>';
       html += p.oeuvres.map((o) => '<a class="accroche" href="' + P.lienOeuvre(o) + '" data-curseur="Voir" data-teinte="' + o.teinte + '"><div style="height:' + zone + 'px;display:grid;place-items:center">' + P.cadreHTML(o, k) + '</div>' + P.cartelHTML(o) + '</a>').join('');
     });
     html += '</div>';
@@ -43,7 +114,11 @@
     const reperes = $$('.accroche, .salle__titre-mur', piste);
     const accroches = $$('.accroche', piste);
     const compteur = $('[data-compteur]'), jauge = $('[data-jauge]');
+    const ambiances = $$('.salle__ambiance', piste);
+    const fond = $('.salle__fond', section);
     const maj = () => {
+      // léger décalage de l'image dans son panneau : effet de profondeur
+      ambiances.forEach((im) => { const r = im.parentNode.getBoundingClientRect(); const rel = (r.left + r.width / 2 - innerWidth / 2) / innerWidth; im.style.transform = 'translateX(' + (rel * -36).toFixed(1) + 'px) scale(1.14)'; });
       const c = innerWidth / 2; let best = 0, d = 1e9;
       reperes.forEach((a, i) => { const r = a.getBoundingClientRect(); const dd = Math.abs(r.left + r.width / 2 - c); if (dd < d) { d = dd; best = i; } });
       const el = reperes[best];
@@ -59,14 +134,16 @@
     }
     const distance = () => Math.max(0, piste.scrollWidth - innerWidth);
     const skew = g.quickTo(piste, 'skewX', { duration: .5, ease: 'power3' });
-    g.to(piste, {
-      x: () => -distance(), ease: 'none',
+    const tl = g.timeline({
       scrollTrigger: {
         trigger: section, start: 'top top', end: () => '+=' + distance() * .9, pin: true, scrub: .8, invalidateOnRefresh: true, anticipatePin: 1,
         onUpdate: (s) => { jauge.style.transform = 'scaleX(' + s.progress + ')'; maj(); skew(-Math.max(-1, Math.min(1, s.getVelocity() / 4000)) * 2); },
         onScrubComplete: () => skew(0)
       }
     });
+    tl.to(piste, { x: () => -distance(), ease: 'none' }, 0);
+    // le mur de la galerie glisse plus lentement que les œuvres
+    if (fond) tl.to(fond, { xPercent: -18, ease: 'none' }, 0);
     maj();
   }
 
