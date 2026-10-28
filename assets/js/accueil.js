@@ -162,7 +162,7 @@
     const fond = $('.salle__fond', section);
     const tl = g.timeline({
       scrollTrigger: {
-        trigger: section, start: 'top top', end: () => '+=' + distance(), pin: true, scrub: .8, invalidateOnRefresh: true, anticipatePin: 1,
+        trigger: section, start: 'top top', end: () => '+=' + distance(), pin: true, scrub: .8, invalidateOnRefresh: true,
         onUpdate: (s) => {
           jauge.style.transform = 'scaleX(' + s.progress + ')';
           majTeinte();

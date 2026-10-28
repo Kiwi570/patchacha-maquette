@@ -95,7 +95,7 @@
     const parSerie = Object.keys(P.series).map((cle) => ({ cle, s: P.series[cle], oeuvres: P.oeuvres.filter((o) => o.serie === cle && o.oeuvre) }));
     const maxH = Math.max(...P.oeuvres.filter((o) => o.oeuvre).map((o) => P.dims(o)[1]));
     const tete = $('.salle__entete', section).offsetHeight;
-    const k = Math.max(3, Math.min(7, (innerHeight - tete - 48 - 150 - 56) / maxH, (innerWidth * .6) / 60));
+    const k = Math.max(1.6, Math.min(7, (innerHeight - tete - 48 - 150 - 56) / maxH, (innerWidth * .6) / 60));
     const zone = maxH * k;
     let html = '<div class="salle__axe" style="top:' + (48 + zone / 2) + 'px"><span>Axe d’accrochage, à 155 cm du sol</span></div><div class="salle__piste" data-piste>';
     parSerie.forEach((p, i) => {
@@ -136,7 +136,7 @@
     const skew = g.quickTo(piste, 'skewX', { duration: .5, ease: 'power3' });
     const tl = g.timeline({
       scrollTrigger: {
-        trigger: section, start: 'top top', end: () => '+=' + distance() * .9, pin: true, scrub: .8, invalidateOnRefresh: true, anticipatePin: 1,
+        trigger: section, start: 'top top', end: () => '+=' + distance() * .9, pin: true, scrub: .8, invalidateOnRefresh: true,
         onUpdate: (s) => { jauge.style.transform = 'scaleX(' + s.progress + ')'; maj(); skew(-Math.max(-1, Math.min(1, s.getVelocity() / 4000)) * 2); },
         onScrubComplete: () => skew(0)
       }

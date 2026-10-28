@@ -371,6 +371,9 @@
   /* ---------- En-tête, menu, outils ---------- */
   function entete() {
     const h = P.$('.site-header'); if (!h) return;
+    // hauteur réelle de l'en-tête (zone sûre comprise) : les sections épinglées se calent dessous
+    const majHauteur = () => document.documentElement.style.setProperty('--entete-h', Math.round(h.offsetTop + h.offsetHeight) + 'px');
+    majHauteur(); new ResizeObserver(majHauteur).observe(h);
     let dernier = 0;
     const surDefil = (y) => {
       h.classList.toggle('est-colle', y > 30);
@@ -858,10 +861,44 @@
     new IntersectionObserver((e) => { visible = e[0].isIntersecting; if (visible) { t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(boucle); } }).observe(section);
   };
 
+  /* ---------- Barre d'actions du bas (téléphone) ---------- */
+  // Reprend des liens déjà présents sur le site ; visible une fois le héros passé,
+  // masquée sur les formulaires, le pied de page, le menu ouvert et la page introuvable.
+  function barreBas() {
+    if (document.body.classList.contains('page-introuvable')) return;
+    const surTableaux = document.body.classList.contains('page-tableaux');
+    const contact = document.body.classList.contains('page-index') ? '#contact' : 'index.html#contact';
+    const barre = document.createElement('nav');
+    barre.className = 'barre-bas'; barre.setAttribute('aria-label', 'Actions rapides'); barre.inert = true;
+    barre.innerHTML = (surTableaux ? '<a class="btn" href="#oeuvres">Voir toutes les œuvres</a>' : '<a class="btn" href="tableaux.html">Voir les tableaux</a>') +
+      '<a class="btn btn--ligne" href="' + contact + '">Écrire à l’artiste</a>';
+    document.body.appendChild(barre);
+    const racine = document.documentElement;
+    const majHauteur = () => racine.style.setProperty('--barres-h', barre.offsetHeight + 'px');
+    majHauteur(); new ResizeObserver(majHauteur).observe(barre);
+    const heros = P.$('main > section, .fiche__grille');
+    const caches = P.$$('form, .site-footer');
+    const vus = new Set();
+    let herosPasse = false;
+    const maj = () => {
+      const ouvert = racine.classList.contains('menu-ouvert') || racine.classList.contains('verrou');
+      const visible = herosPasse && !vus.size && !ouvert;
+      barre.classList.toggle('est-visible', visible);
+      barre.inert = !visible;
+      racine.classList.toggle('a-barre', visible);
+    };
+    if (heros) new IntersectionObserver((e) => { herosPasse = !e[0].isIntersecting && e[0].boundingClientRect.top < 0; maj(); }).observe(heros);
+    else herosPasse = true;
+    const io = new IntersectionObserver((e) => { e.forEach((x) => (x.isIntersecting ? vus.add(x.target) : vus.delete(x.target))); maj(); });
+    caches.forEach((c) => io.observe(c));
+    new MutationObserver(maj).observe(racine, { attributes: true, attributeFilter: ['class'] });
+    maj();
+  }
+
   /* ---------- Démarrage commun ---------- */
   P.pret = (fn) => (document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', fn) : fn());
   P.pret(() => {
-    entete(); curseur(); aimants(); empreintes(); odet(); transitions(); pied();
+    entete(); curseur(); aimants(); empreintes(); odet(); transitions(); pied(); barreBas();
     P.formulaireSimule(P.$('#form-newsletter'), (p) => 'Merci' + (p ? ' ' + P.esc(p) : '') + ' ! Inscription simulée : dans le vrai site, le code de −10 % arriverait par e-mail.');
     P.formulaireSimule(P.$('#form-contact'), (p) => 'Merci' + (p ? ' ' + P.esc(p) : '') + '. Message simulé : dans le vrai site, il partirait vers ' + SITE.contact.email + ', avec une réponse dans la journée.');
     if (window.ScrollTrigger) window.addEventListener('load', () => window.ScrollTrigger.refresh());
